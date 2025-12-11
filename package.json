@@ -1,0 +1,71 @@
+{
+	"name": "n8n-nodes-propstack",
+	"version": "0.2.0",
+	"description": "Propstack CRM API community node for n8n — automate real estate CRM workflows.",
+	"license": "MIT",
+	"homepage": "https://github.com/hansdoebel/n8n-nodes-propstack#readme",
+	"keywords": [
+		"n8n-community-node-package",
+		"n8n-community-node",
+		"n8n",
+		"n8n-node",
+		"workflow-automation",
+		"workflow",
+		"automation",
+		"propstack",
+		"propstack-crm",
+		"crm",
+		"real-estate"
+	],
+	"author": {
+		"name": "Hans Doebel",
+		"email": "hansdev@mailbox.org"
+	},
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/hansdoebel/n8n-nodes-propstack.git"
+	},
+	"bugs": {
+		"url": "https://github.com/hansdoebel/n8n-nodes-propstack/issues"
+	},
+	"engines": {
+		"node": ">=18.10"
+	},
+	"scripts": {
+	  "build": "n8n-node build",
+		"build:watch": "tsc --watch",
+		"dev": "n8n-node dev",
+		"lint": "n8n-node lint",
+		"lint:fix": "n8n-node lint --fix",
+		"test": "bun test tests/unit",
+		"test:v1": "bun test tests/unit/v1 tests/unit/shared",
+		"test:v2": "bun test tests/unit/v2 tests/unit/shared",
+		"test:watch": "bun test --watch tests/unit",
+		"test:integration": "bun test tests/integration"
+	},
+	"files": [
+		"dist"
+	],
+	"publishConfig": {
+			"access": "public"
+	},
+	"n8n": {
+		"n8nNodesApiVersion": 1,
+		"credentials": [
+			"dist/credentials/PropstackApi.credentials.js",
+			"dist/credentials/PropstackV2Api.credentials.js"
+		],
+		"nodes": [
+			"dist/nodes/Propstack/Propstack.node.js",
+			"dist/nodes/Propstack/PropstackTrigger.node.js"
+		]
+	},
+	"devDependencies": {
+		"@n8n/node-cli": "^0.23.1",
+		"eslint": "~9.28.0",
+		"typescript": "6.0.2"
+	},
+	"peerDependencies": {
+		"n8n-workflow": "^2.13.1"
+	}
+}
