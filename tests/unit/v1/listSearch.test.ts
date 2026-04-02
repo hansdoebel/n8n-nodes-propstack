@@ -127,7 +127,7 @@ describe("listSearch", () => {
 
       const opts = getHttpRequestOptions(mock);
       expect(opts.qs.q).toBe("john");
-      expect(opts.qs.per_page).toBe(100);
+      expect(opts.qs.per).toBe(100);
     });
 
     it("does not pass q when no filter", async () => {
@@ -136,7 +136,7 @@ describe("listSearch", () => {
       await searchContacts.call(mock);
 
       const opts = getHttpRequestOptions(mock);
-      expect(opts.qs).toEqual({ per_page: 100 });
+      expect(opts.qs).toEqual({ per: 100 });
     });
   });
 

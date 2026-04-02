@@ -80,7 +80,7 @@ describe("properties", () => {
       const opts = getHttpRequestOptions(mock);
       expect(opts.method).toBe("GET");
       expect(opts.url).toBe("/v1/units");
-      expect(opts.qs.per_page).toBe(20);
+      expect(opts.qs.per).toBe(20);
       expect(result).toHaveLength(1);
     });
   });

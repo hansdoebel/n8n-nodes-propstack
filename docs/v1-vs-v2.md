@@ -43,7 +43,7 @@ Each version uses its own credential: v1 uses `propstackApi`, v2 uses `propstack
 | Credential | `propstackApi` | `propstackV2Api` |
 | API base path | `/v1/` | `/v2/` |
 | API status | Stable | Beta |
-| Pagination parameter | `per_page` | `per` |
+| Pagination parameter | `per` | `per` |
 | Scroll endpoints | -- | Properties, Clients, Client Properties, Activities |
 | Deleted records | -- | Properties, Clients |
 | Property options | -- | Dropdown values endpoint |

@@ -35,7 +35,7 @@ export async function searchContacts(
   this: ILoadOptionsFunctions,
   filter?: string,
 ): Promise<INodeListSearchResult> {
-  const qs: IDataObject = { per_page: 100 };
+  const qs: IDataObject = { per: 100 };
   if (filter) qs.q = filter;
   const response = await propstackRequest.call(this, {
     method: "GET",
@@ -61,7 +61,7 @@ export async function searchDeals(
   const response = await propstackRequest.call(this, {
     method: "GET",
     url: API_ENDPOINTS.DEALS_GET_ALL,
-    qs: { per_page: 100, include: "client,property" },
+    qs: { per: 100, include: "client,property" },
   });
   const items = Array.isArray(response) ? response : [response];
   let results = items
@@ -125,7 +125,7 @@ export async function searchDocuments(
   const response = await propstackRequest.call(this, {
     method: "GET",
     url: API_ENDPOINTS.DOCUMENTS_GET_ALL,
-    qs: { per_page: 100 },
+    qs: { per: 100 },
   });
   const items = Array.isArray(response) ? response : [response];
   let results = items
@@ -150,7 +150,7 @@ export async function searchEmails(
   const response = await propstackRequest.call(this, {
     method: "GET",
     url: API_ENDPOINTS.EMAILS_GET_ALL,
-    qs: { per_page: 100 },
+    qs: { per: 100 },
   });
   const items = Array.isArray(response) ? response : [response];
   let results = items
@@ -208,7 +208,7 @@ export async function searchProjects(
   const response = await propstackRequest.call(this, {
     method: "GET",
     url: API_ENDPOINTS.PROJECTS_GET_ALL,
-    qs: { per_page: 100 },
+    qs: { per: 100 },
   });
   const items = Array.isArray(response) ? response : [response];
   let results = items
@@ -230,7 +230,7 @@ export async function searchProperties(
   this: ILoadOptionsFunctions,
   filter?: string,
 ): Promise<INodeListSearchResult> {
-  const qs: IDataObject = { per_page: 100 };
+  const qs: IDataObject = { per: 100 };
   if (filter) qs.q = filter;
   const response = await propstackRequest.call(this, {
     method: "GET",
@@ -254,7 +254,7 @@ export async function searchSearchProfiles(
   const response = await propstackRequest.call(this, {
     method: "GET",
     url: API_ENDPOINTS.SEARCH_PROFILES_GET_ALL,
-    qs: { per_page: 100 },
+    qs: { per: 100 },
   });
   const items = Array.isArray(response) ? response : [response];
   let results = items
@@ -279,7 +279,7 @@ export async function searchTasks(
   const response = await propstackRequest.call(this, {
     method: "GET",
     url: API_ENDPOINTS.TASKS_GET_ALL,
-    qs: { per_page: 100 },
+    qs: { per: 100 },
   });
   const items = Array.isArray(response) ? response : [response];
   let results = items
@@ -304,7 +304,7 @@ export async function searchTeams(
   const response = await propstackRequest.call(this, {
     method: "GET",
     url: API_ENDPOINTS.TEAMS_GET_ALL,
-    qs: { per_page: 100 },
+    qs: { per: 100 },
   });
   const items = Array.isArray(response) ? response : [response];
   let results = items

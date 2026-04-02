@@ -60,7 +60,7 @@ describeIf(hasApiToken)("Integration: Read-only Resources", () => {
       const res = (await apiRequest({
         method: "GET",
         path: "/v1/events",
-        qs: { per_page: 5 },
+        qs: { per: 5 },
       })) as unknown[];
 
       expect(Array.isArray(res)).toBe(true);
@@ -104,7 +104,7 @@ describeIf(hasApiToken)("Integration: Read-only Resources", () => {
       const res = (await apiRequest({
         method: "GET",
         path: "/v1/notes",
-        qs: { per_page: 5 },
+        qs: { per: 5 },
       })) as unknown[];
 
       expect(Array.isArray(res)).toBe(true);

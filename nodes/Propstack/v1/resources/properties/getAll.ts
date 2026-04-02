@@ -44,7 +44,7 @@ export const propertiesGetAllDescription: INodeProperties[] = [
     description: "Max number of results to return",
     typeOptions: {
       minValue: 1,
-      maxValue: 100,
+      maxValue: 500,
     },
   },
   {
@@ -335,7 +335,7 @@ export async function propertiesGetAll(
     while (hasMore) {
       const qs: IDataObject = {
         page: currentPage,
-        per_page: 100,
+        per: 100,
       };
 
       if (options) {
@@ -431,7 +431,7 @@ export async function propertiesGetAll(
 
   const qs: IDataObject = {
     page,
-    per_page: limit,
+    per: limit,
   };
 
   if (options) {

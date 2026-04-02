@@ -200,7 +200,7 @@ describe("contacts", () => {
       const opts = getHttpRequestOptions(mock);
       expect(opts.method).toBe("GET");
       expect(opts.url).toBe("/v1/contacts");
-      expect(opts.qs.per_page).toBe(25);
+      expect(opts.qs.per).toBe(25);
       expect(opts.qs.page).toBe(1);
       expect(result).toHaveLength(2);
     });

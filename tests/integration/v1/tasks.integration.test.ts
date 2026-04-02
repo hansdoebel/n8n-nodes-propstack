@@ -48,7 +48,7 @@ describeIf(hasApiToken)("Integration: Tasks", () => {
     const res = (await apiRequest({
       method: "GET",
       path: "/v1/tasks",
-      qs: { per_page: 5 },
+      qs: { per: 5 },
     })) as unknown[];
 
     expect(Array.isArray(res)).toBe(true);

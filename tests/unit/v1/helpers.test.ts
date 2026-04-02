@@ -187,11 +187,11 @@ describe("propstackRequest", () => {
     await propstackRequest.call(mock, {
       method: "GET",
       url: "/v1/contacts",
-      qs: { page: 1, per_page: 100 },
+      qs: { page: 1, per: 100 },
     });
 
     const opts = getHttpRequestOptions(mock);
-    expect(opts.qs).toEqual({ page: 1, per_page: 100 });
+    expect(opts.qs).toEqual({ page: 1, per: 100 });
   });
 
   it("works with ILoadOptionsFunctions context", async () => {

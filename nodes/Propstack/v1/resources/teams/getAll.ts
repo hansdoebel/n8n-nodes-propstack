@@ -38,7 +38,7 @@ export const teamsGetAllDescription: INodeProperties[] = [
     description: "Max number of results to return",
     typeOptions: {
       minValue: 1,
-      maxValue: 100,
+      maxValue: 500,
     },
   },
 ];
@@ -57,7 +57,7 @@ export async function teamsGetAll(
     while (hasMore) {
       const qs: IDataObject = {
         page: currentPage,
-        per_page: 100,
+        per: 100,
       };
 
       const response = await propstackRequest.call(this, {
@@ -81,7 +81,7 @@ export async function teamsGetAll(
 
   const qs: IDataObject = {
     page: 1,
-    per_page: limit,
+    per: limit,
   };
 
   const response = await propstackRequest.call(this, {
