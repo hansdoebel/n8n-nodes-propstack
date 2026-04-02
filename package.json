@@ -1,6 +1,6 @@
 {
 	"name": "n8n-nodes-propstack",
-	"version": "0.2.0",
+	"version": "0.2.1",
 	"description": "Propstack CRM API community node for n8n — automate real estate CRM workflows.",
 	"license": "MIT",
 	"homepage": "https://github.com/hansdoebel/n8n-nodes-propstack#readme",
