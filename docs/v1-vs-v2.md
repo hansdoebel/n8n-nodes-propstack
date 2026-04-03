@@ -18,7 +18,7 @@ Each version uses its own credential: v1 uses `propstackApi`, v2 uses `propstack
 | **Custom Field** | getAll | get, getAll, create, update, delete, createOption, deleteOption |
 | **Deal Pipeline** | get, getAll | -- |
 | **Document** | create, delete, get, getAll, update | -- |
-| **Email** | get, getAll, send, update | -- |
+| **Email** | get, send, update | -- |
 | **Event** | getAll | -- |
 | **Feature** | create, getAll, getParentFeatures | -- |
 | **History** | -- | get *(messages, notes, events, tasks, deals)* |
@@ -26,14 +26,14 @@ Each version uses its own credential: v1 uses `propstackApi`, v2 uses `propstack
 | **Note** | getAll | -- |
 | **Note Attachment** | -- | create |
 | **Portal Export** | publish | -- |
-| **Project** | create, delete, get, getAll, update | create, delete, get, getAll, update |
+| **Project** | create, get, getAll, update | create, delete, get, getAll, update |
 | **Property** | create, delete, get, getAll, update | create, delete, get, getAll, getDeleted, getOptions, scroll, update, createLink, updateLink, deleteLink |
 | **Reference Data** | -- | getAll *(property statuses, publishings, portals, client statuses, client sources, snippet categories, groups, folders, comments, message trackings, recipes, rights)* |
 | **Relationship** | -- | getAll, create, delete |
 | **Search Profile** | create, delete, getAll, update | -- |
-| **Snippet** | -- | getAll, create, update, delete, addAttachment |
+| **Snippet** | getAll | getAll, create, update, delete, addAttachment |
 | **Task** | create, delete, get, getAll, update | -- |
-| **Team** | create, delete, get, getAll, update | -- |
+| **Team** | getAll | -- |
 | **Webhook** | create, delete, getAll | -- |
 
 ## Key Differences

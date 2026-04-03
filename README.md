@@ -28,7 +28,7 @@ A community node for [n8n](https://n8n.io/) that integrates with the [Propstack]
 
 The node ships in two versions targeting different Propstack API generations:
 
-- **Propstack (v1)**: stable API, page-based pagination, 19 resources
+- **Propstack (v1)**: stable API, page-based pagination, 20 resources
 - **Propstack V2**: beta API, adds scroll pagination, deleted record retrieval, and new resources
 - **Propstack Trigger**: webhook-based trigger with 18 event types
 
@@ -44,17 +44,18 @@ The node ships in two versions targeting different Propstack API generations:
 | Deal Pipelines | Get, Get Many |
 | Deals | Create, Delete, Get, Get Many, Update |
 | Documents | Create, Delete, Get, Get Many, Update |
-| Emails | Get, Get Many, Send, Update |
+| Emails | Get, Send, Update |
 | Events | Get Many |
 | Features | Create, Get Many, Get Parent Features |
 | Locations | Get Many |
 | Notes | Get Many |
 | Portal Export | Publish |
-| Projects | Create, Delete, Get, Get Many, Update |
+| Projects | Create, Get, Get Many, Update |
 | Properties | Create, Delete, Get, Get Many, Update |
 | Search Profiles | Create, Delete, Get Many, Update |
+| Snippets | Get Many |
 | Tasks | Create, Delete, Get, Get Many, Update |
-| Teams | Create, Delete, Get, Get Many, Update |
+| Teams | Get Many |
 | Webhooks | Create, Delete, Get Many |
 
 </details>
