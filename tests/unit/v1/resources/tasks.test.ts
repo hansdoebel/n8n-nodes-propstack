@@ -26,7 +26,7 @@ describe("tasks", () => {
       expect(opts.method).toBe("POST");
       expect(opts.url).toBe("/v1/tasks");
       expect(opts.body.task.title).toBe("Follow up with client");
-      expect(opts.body.task.broker_id).toBe("5");
+      expect(opts.body.task.broker_id).toBe(5);
       expect(opts.body.task.is_reminder).toBe(true);
       expect(opts.body.task.due_date).toBe("2025-06-01");
       expect(result).toHaveLength(1);

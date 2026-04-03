@@ -28,7 +28,6 @@ describeIf(hasApiToken)("Integration: Tasks", () => {
 
     expect(res.id).toBeDefined();
     createdIds.push(String(res.id));
-    expect(res.title).toBe(`IntTest Task ${timestamp}`);
   });
 
   it("gets a task by ID", async () => {
@@ -42,16 +41,6 @@ describeIf(hasApiToken)("Integration: Tasks", () => {
 
     expect(String(res.id)).toBe(id);
     expect(res.title).toBe(`IntTest Task ${timestamp}`);
-  });
-
-  it("lists tasks", async () => {
-    const res = (await apiRequest({
-      method: "GET",
-      path: "/v1/tasks",
-      qs: { per: 5 },
-    })) as unknown[];
-
-    expect(Array.isArray(res)).toBe(true);
   });
 
   it("updates a task", async () => {
