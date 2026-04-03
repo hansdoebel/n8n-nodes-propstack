@@ -101,7 +101,7 @@ describe("features", () => {
           entity: "for_clients",
           includeGroups: false,
         },
-        httpResponse: [{ id: 1, name: "Category A" }],
+        httpResponse: { data: [{ id: 1, name: "Category A" }] },
       });
 
       const result = await featuresParentGetAll.call(mock);
@@ -112,6 +112,7 @@ describe("features", () => {
       expect(opts.qs.entity).toBe("for_clients");
       expect(opts.qs.include).toBeUndefined();
       expect(result).toHaveLength(1);
+      expect(result[0].json.name).toBe("Category A");
     });
 
     it("includes groups when includeGroups is true", async () => {
@@ -120,13 +121,28 @@ describe("features", () => {
           entity: "for_properties",
           includeGroups: true,
         },
-        httpResponse: [{ id: 1, name: "Amenities", groups: [] }],
+        httpResponse: { data: [{ id: 1, name: "Amenities", groups: [] }] },
       });
 
       await featuresParentGetAll.call(mock);
 
       const opts = getHttpRequestOptions(mock);
       expect(opts.qs.include).toBe("groups");
+    });
+
+    it("handles plain array response", async () => {
+      const mock = createMockExecuteFunctions({
+        nodeParameters: {
+          entity: "for_activities",
+          includeGroups: false,
+        },
+        httpResponse: [{ id: 2, name: "Tags" }],
+      });
+
+      const result = await featuresParentGetAll.call(mock);
+
+      expect(result).toHaveLength(1);
+      expect(result[0].json.name).toBe("Tags");
     });
   });
 });

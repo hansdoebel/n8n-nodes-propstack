@@ -101,6 +101,28 @@ export const featuresFields: INodeProperties[] = [
     ],
   },
   {
+    displayName: "Additional Fields",
+    name: "additionalFields",
+    type: "collection",
+    placeholder: "Add Field",
+    default: {},
+    displayOptions: {
+      show: {
+        resource: ["features"],
+        operation: ["getAll"],
+      },
+    },
+    options: [
+      {
+        displayName: "Parent Feature ID",
+        name: "superGroupId",
+        type: "string",
+        default: "",
+        description: "Filter by parent category ID",
+      },
+    ],
+  },
+  {
     displayName: "Include Child Features",
     name: "includeGroups",
     type: "boolean",
