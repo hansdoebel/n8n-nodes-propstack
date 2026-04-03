@@ -8,8 +8,7 @@ describeIf(hasApiToken)("Integration: Properties", () => {
     for (const id of createdIds) {
       try {
         await apiRequest({ method: "DELETE", path: `/v1/units/${id}` });
-      } catch {
-      }
+      } catch { /* best-effort cleanup */ }
     }
   });
 

@@ -9,9 +9,9 @@ describe("webhooks", () => {
       const mock = createMockExecuteFunctions({
         nodeParameters: {
           targetUrl: "https://example.com/hook",
-          event: "client.created",
+          event: "client_created",
         },
-        httpResponse: { id: 1, event: "client.created", target_url: "https://example.com/hook" },
+        httpResponse: { id: 1, event: "CLIENT_CREATED", target_url: "https://example.com/hook" },
       });
 
       const result = await webhooksCreate.call(mock);
@@ -21,10 +21,10 @@ describe("webhooks", () => {
       expect(opts.url).toBe("/v1/hooks");
       expect(opts.body).toEqual({
         target_url: "https://example.com/hook",
-        event: "client.created",
+        event: "client_created",
       });
       expect(result).toHaveLength(1);
-      expect(result[0].json.event).toBe("client.created");
+      expect(result[0].json.id).toBe(1);
     });
   });
 
@@ -32,7 +32,7 @@ describe("webhooks", () => {
     it("sends DELETE to /v1/hooks/{id}", async () => {
       const mock = createMockExecuteFunctions({
         nodeParameters: { id: { value: "5" } },
-        httpResponse: { success: true },
+        httpResponse: { ok: true },
       });
 
       const result = await webhooksDelete.call(mock);
@@ -40,17 +40,19 @@ describe("webhooks", () => {
       const opts = getHttpRequestOptions(mock);
       expect(opts.method).toBe("DELETE");
       expect(opts.url).toBe("/v1/hooks/5");
-      expect(result).toHaveLength(1);
+      expect(result[0].json.deleted).toBe(true);
     });
   });
 
   describe("getAll", () => {
-    it("sends GET to /v1/hooks", async () => {
+    it("sends GET to /v1/hooks and unwraps hooks array", async () => {
       const mock = createMockExecuteFunctions({
-        httpResponse: [
-          { id: 1, event: "client.created", target_url: "https://a.com" },
-          { id: 2, event: "property.updated", target_url: "https://b.com" },
-        ],
+        httpResponse: {
+          hooks: [
+            { id: 1, event: "CLIENT_CREATED", target_url: "https://a.com" },
+            { id: 2, event: "PROPERTY_UPDATED", target_url: "https://b.com" },
+          ],
+        },
       });
 
       const result = await webhooksGetAll.call(mock);
@@ -58,8 +60,19 @@ describe("webhooks", () => {
       const opts = getHttpRequestOptions(mock);
       expect(opts.method).toBe("GET");
       expect(opts.url).toBe("/v1/hooks");
+      expect(result).toHaveLength(2);
+      expect(result[0].json.event).toBe("CLIENT_CREATED");
+      expect(result[1].json.event).toBe("PROPERTY_UPDATED");
+    });
+
+    it("handles plain array response", async () => {
+      const mock = createMockExecuteFunctions({
+        httpResponse: [{ id: 1 }],
+      });
+
+      const result = await webhooksGetAll.call(mock);
+
       expect(result).toHaveLength(1);
-      expect(result[0].json).toHaveLength(2);
     });
   });
 });

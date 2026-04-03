@@ -8,9 +8,7 @@ describeIf(hasApiToken)("Integration: Webhooks", () => {
     for (const id of createdIds) {
       try {
         await apiRequest({ method: "DELETE", path: `/v1/hooks/${id}` });
-      } catch {
-        // best-effort cleanup
-      }
+      } catch { /* best-effort cleanup */ }
     }
   });
 
@@ -19,33 +17,41 @@ describeIf(hasApiToken)("Integration: Webhooks", () => {
       method: "POST",
       path: "/v1/hooks",
       body: {
-        event: "client.created",
+        event: "client_created",
         target_url: `https://example.com/webhook-inttest-${timestamp}`,
       },
     })) as Record<string, unknown>;
 
     expect(res.id).toBeDefined();
     createdIds.push(String(res.id));
-    expect(res.event).toBe("client.created");
   });
 
-  it("lists webhooks", async () => {
+  it("lists webhooks with hooks wrapper", async () => {
     const res = (await apiRequest({
       method: "GET",
       path: "/v1/hooks",
-    })) as unknown[];
+    })) as { hooks: Record<string, unknown>[] };
 
-    expect(Array.isArray(res)).toBe(true);
-    expect(res.length).toBeGreaterThan(0);
+    expect(res).toHaveProperty("hooks");
+    expect(Array.isArray(res.hooks)).toBe(true);
+    expect(res.hooks.length).toBeGreaterThan(0);
+
+    for (const hook of res.hooks.slice(0, 3)) {
+      expect(hook.id).toBeDefined();
+      expect(hook.event).toBeDefined();
+      expect(hook.target_url).toBeDefined();
+    }
   });
 
   it("deletes a webhook", async () => {
     expect(createdIds.length).toBeGreaterThan(0);
     const id = createdIds.pop()!;
 
-    await apiRequest({
+    const res = (await apiRequest({
       method: "DELETE",
       path: `/v1/hooks/${id}`,
-    });
+    })) as Record<string, unknown>;
+
+    expect(res.ok).toBe(true);
   });
 });
