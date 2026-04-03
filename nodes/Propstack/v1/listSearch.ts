@@ -122,12 +122,12 @@ export async function searchDocuments(
   this: ILoadOptionsFunctions,
   filter?: string,
 ): Promise<INodeListSearchResult> {
-  const response = await propstackRequest.call(this, {
+  const response = (await propstackRequest.call(this, {
     method: "GET",
     url: API_ENDPOINTS.DOCUMENTS_GET_ALL,
     qs: { per: 100 },
-  });
-  const items = Array.isArray(response) ? response : [response];
+  })) as { documents?: IDataObject[] };
+  const items = Array.isArray(response.documents) ? response.documents : [];
   let results = items
     .filter((item: IDataObject) => item && item.id)
     .map((item: IDataObject) => ({

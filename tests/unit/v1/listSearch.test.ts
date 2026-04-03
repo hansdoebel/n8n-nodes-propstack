@@ -237,7 +237,7 @@ describe("listSearch", () => {
   describe("searchDocuments", () => {
     it("returns document names", async () => {
       const mock = createMockLoadOptionsFunctions({
-        httpResponse: [{ id: 1, name: "Contract.pdf" }],
+        httpResponse: { documents: [{ id: 1, name: "Contract.pdf" }] },
       });
 
       const result = await searchDocuments.call(mock);
@@ -247,7 +247,7 @@ describe("listSearch", () => {
 
     it("uses title as fallback", async () => {
       const mock = createMockLoadOptionsFunctions({
-        httpResponse: [{ id: 1, title: "Floor Plan" }],
+        httpResponse: { documents: [{ id: 1, title: "Floor Plan" }] },
       });
 
       const result = await searchDocuments.call(mock);
@@ -257,7 +257,7 @@ describe("listSearch", () => {
 
     it("uses fallback name when no name or title", async () => {
       const mock = createMockLoadOptionsFunctions({
-        httpResponse: [{ id: 7 }],
+        httpResponse: { documents: [{ id: 7 }] },
       });
 
       const result = await searchDocuments.call(mock);

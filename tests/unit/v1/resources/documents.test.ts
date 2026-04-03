@@ -111,7 +111,7 @@ describe("documents", () => {
           limit: 25,
           additionalFields: {},
         },
-        httpResponse: [{ id: 1 }],
+        httpResponse: { documents: [{ id: 1 }] },
       });
 
       const result = await documentsGetAll.call(mock);

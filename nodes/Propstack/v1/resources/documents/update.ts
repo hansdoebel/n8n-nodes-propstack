@@ -6,7 +6,19 @@ import type {
 } from "n8n-workflow";
 
 import { API_ENDPOINTS } from "../../constants";
-import { extractResourceLocatorValue, propstackRequest } from "../../helpers";
+import { buildQs, extractResourceLocatorValue, propstackRequest, splitCsv } from "../../helpers";
+
+const DOC_BODY_MAPPING: Record<string, string> = {
+  title: "title",
+  doc: "doc",
+  client_id: "client_id",
+  property_id: "property_id",
+  project_id: "project_id",
+  on_landing_page: "on_landing_page",
+  is_floorplan: "is_floorplan",
+  is_exposee: "is_exposee",
+  is_private: "is_private",
+};
 
 const showForDocumentsUpdate = {
   operation: ["update"],
@@ -101,52 +113,17 @@ export const documentsUpdateDescription: INodeProperties[] = [
   },
 ];
 
-function buildDocumentsUpdateBody(this: IExecuteFunctions): IDataObject {
-  const body: IDataObject = {};
-
-  const options = this.getNodeParameter(
-    "additionalFields",
-    0,
-  ) as IDataObject;
-
-  if (options) {
-    const fields = [
-      "title",
-      "doc",
-      "client_id",
-      "property_id",
-      "project_id",
-      "on_landing_page",
-      "is_floorplan",
-      "is_exposee",
-      "is_private",
-    ];
-
-    for (const field of fields) {
-      if (
-        options[field] !== undefined && options[field] !== ""
-      ) {
-        body[field] = options[field];
-      }
-    }
-
-    if (options.tags) {
-      body.tags = (options.tags as string)
-        .split(",")
-        .map((tag) => tag.trim());
-    }
-  }
-
-  return body;
-}
-
 export async function documentsUpdate(
   this: IExecuteFunctions,
 ): Promise<INodeExecutionData[]> {
   const documentId = extractResourceLocatorValue(
     this.getNodeParameter("documentId", 0),
   );
-  const body = buildDocumentsUpdateBody.call(this);
+  const options = this.getNodeParameter("additionalFields", 0) as IDataObject;
+  const body = buildQs(options, {
+    ...DOC_BODY_MAPPING,
+    tags: splitCsv("tags"),
+  });
 
   const response = await propstackRequest.call(this, {
     method: "PUT",

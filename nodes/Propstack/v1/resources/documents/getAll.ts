@@ -6,7 +6,7 @@ import type {
 } from "n8n-workflow";
 
 import { API_ENDPOINTS } from "../../constants";
-import { propstackRequest } from "../../helpers";
+import { buildQs, propstackRequest } from "../../helpers";
 
 const showForDocumentsGetAll = {
   operation: ["getAll"],
@@ -119,12 +119,19 @@ export async function documentsGetAll(
 ): Promise<INodeExecutionData[]> {
   const returnAll = this.getNodeParameter("returnAll", 0) as boolean;
   const limit = this.getNodeParameter("limit", 0, 50) as number;
-  const options = this.getNodeParameter(
-    "additionalFields",
-    0,
-  ) as IDataObject;
+  const options = this.getNodeParameter("additionalFields", 0) as IDataObject;
 
   const page = (options?.page as number) || 1;
+
+  const optionsQs = buildQs(options, {
+    order_by: "order_by",
+    tag: "tag",
+    is_private: "is_private",
+    client: "client",
+    property: "property",
+    project: "project",
+    client_property: "client_property",
+  });
 
   if (returnAll) {
     let allResults: IDataObject[] = [];
@@ -132,35 +139,14 @@ export async function documentsGetAll(
     let hasMore = true;
 
     while (hasMore) {
-      const qs: IDataObject = {
-        page: currentPage,
-        per: 100,
-      };
-
-      if (options) {
-        if (options.order_by) qs.order_by = options.order_by;
-        if (options.tag) qs.tag = options.tag;
-        if (
-          options.is_private !== undefined &&
-          options.is_private !== ""
-        ) {
-          qs.is_private = options.is_private;
-        }
-        if (options.client) qs.client = options.client;
-        if (options.property) qs.property = options.property;
-        if (options.project) qs.project = options.project;
-        if (options.client_property) {
-          qs.client_property = options.client_property;
-        }
-      }
-
       const response = await propstackRequest.call(this, {
         method: "GET",
         url: API_ENDPOINTS.DOCUMENTS_GET_ALL,
-        qs,
+        qs: { page: currentPage, per: 100, ...optionsQs },
       });
 
-      const results = Array.isArray(response) ? response : [response];
+      const body = response as IDataObject;
+      const results = Array.isArray(body.documents) ? body.documents : [];
       allResults = allResults.concat(results);
 
       if (results.length < 100) {
@@ -173,37 +159,15 @@ export async function documentsGetAll(
     return this.helpers.returnJsonArray(allResults);
   }
 
-  const qs: IDataObject = {
-    page,
-    per: limit,
-  };
-
-  if (options) {
-    if (options.order_by) qs.order_by = options.order_by;
-    if (options.tag) qs.tag = options.tag;
-    if (
-      options.is_private !== undefined &&
-      options.is_private !== ""
-    ) {
-      qs.is_private = options.is_private;
-    }
-    if (options.client) qs.client = options.client;
-    if (options.property) qs.property = options.property;
-    if (options.project) qs.project = options.project;
-    if (options.client_property) {
-      qs.client_property = options.client_property;
-    }
-  }
-
   const response = await propstackRequest.call(this, {
     method: "GET",
     url: API_ENDPOINTS.DOCUMENTS_GET_ALL,
-    qs,
+    qs: { page, per: limit, ...optionsQs },
   });
 
-  return this.helpers.returnJsonArray(
-    Array.isArray(response) ? response : [response],
-  );
+  const body = response as IDataObject;
+  const results = Array.isArray(body.documents) ? body.documents : [];
+  return this.helpers.returnJsonArray(results);
 }
 
 export default documentsGetAllDescription;
