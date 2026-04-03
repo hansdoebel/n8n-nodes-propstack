@@ -19,10 +19,10 @@ describe("listSearch", () => {
   describe("searchActivities", () => {
     it("returns mapped activities", async () => {
       const mock = createMockLoadOptionsFunctions({
-        httpResponse: [
+        httpResponse: { data: [
           { id: 1, title: "Call with client" },
           { id: 2, title: "Site visit" },
-        ],
+        ] },
       });
 
       const result = await searchActivities.call(mock);
@@ -35,7 +35,7 @@ describe("listSearch", () => {
 
     it("uses fallback name when title is missing", async () => {
       const mock = createMockLoadOptionsFunctions({
-        httpResponse: [{ id: 5 }],
+        httpResponse: { data: [{ id: 5 }] },
       });
 
       const result = await searchActivities.call(mock);
@@ -45,10 +45,10 @@ describe("listSearch", () => {
 
     it("filters by name when filter is provided", async () => {
       const mock = createMockLoadOptionsFunctions({
-        httpResponse: [
+        httpResponse: { data: [
           { id: 1, title: "Call with client" },
           { id: 2, title: "Site visit" },
-        ],
+        ] },
       });
 
       const result = await searchActivities.call(mock, "call");
@@ -58,7 +58,7 @@ describe("listSearch", () => {
 
     it("excludes items without id", async () => {
       const mock = createMockLoadOptionsFunctions({
-        httpResponse: [{ title: "No ID" }, { id: 1, title: "Has ID" }],
+        httpResponse: { data: [{ title: "No ID" }, { id: 1, title: "Has ID" }] },
       });
 
       const result = await searchActivities.call(mock);
@@ -67,18 +67,18 @@ describe("listSearch", () => {
       expect(result.results[0].value).toBe("1");
     });
 
-    it("handles non-array response", async () => {
+    it("handles empty data array", async () => {
       const mock = createMockLoadOptionsFunctions({
-        httpResponse: { id: 1, title: "Single" },
+        httpResponse: { data: [] },
       });
 
       const result = await searchActivities.call(mock);
 
-      expect(result.results).toEqual([{ name: "Single", value: "1" }]);
+      expect(result.results).toEqual([]);
     });
 
     it("passes correct request options", async () => {
-      const mock = createMockLoadOptionsFunctions({ httpResponse: [] });
+      const mock = createMockLoadOptionsFunctions({ httpResponse: { data: [] } });
 
       await searchActivities.call(mock);
 

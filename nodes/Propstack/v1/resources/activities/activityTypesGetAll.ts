@@ -1,4 +1,5 @@
 import type {
+  IDataObject,
   IExecuteFunctions,
   INodeExecutionData,
   INodeProperties,
@@ -17,9 +18,9 @@ export async function activityTypesGetAll(
     url: API_ENDPOINTS.ACTIVITY_TYPES_GET_ALL,
   });
 
-  return this.helpers.returnJsonArray(
-    Array.isArray(response) ? response : [response],
-  );
+  const body = response as { data?: IDataObject[] };
+  const results = Array.isArray(body.data) ? body.data : [];
+  return this.helpers.returnJsonArray(results);
 }
 
 export default activityTypesGetAllDescription;

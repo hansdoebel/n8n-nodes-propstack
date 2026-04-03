@@ -4,10 +4,10 @@ import { API_ENDPOINTS } from "../../../nodes/Propstack/v1/constants";
  * Returns the API token from the environment, or skips the test suite if not set.
  */
 export function getApiToken(): string {
-  const token = process.env.PROPSTACK_API_TOKEN;
+  const token = process.env.PROPSTACK_V1_API_TOKEN;
   if (!token) {
     throw new Error(
-      "PROPSTACK_API_TOKEN env var is required for integration tests. " +
+      "PROPSTACK_V1_API_TOKEN env var is required for integration tests. " +
         "Copy .env.example to .env and set your token.",
     );
   }
@@ -62,4 +62,4 @@ export async function apiRequest(opts: {
 export const describeIf = (condition: boolean) =>
   condition ? describe : describe.skip;
 
-export const hasApiToken = !!process.env.PROPSTACK_API_TOKEN;
+export const hasApiToken = !!process.env.PROPSTACK_V1_API_TOKEN;

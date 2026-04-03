@@ -42,7 +42,7 @@ describe("activities", () => {
           limit: 25,
           additionalFields: {},
         },
-        httpResponse: [{ id: 1 }, { id: 2 }],
+        httpResponse: { data: [{ id: 1 }, { id: 2 }] },
       });
 
       const result = await activitiesGetAll.call(mock);
@@ -57,8 +57,8 @@ describe("activities", () => {
 
     it("paginates when returnAll is true", async () => {
       const httpRequest = createMock()
-        .mockResolvedValueOnce(Array.from({ length: 100 }, (_, i) => ({ id: i + 1 })))
-        .mockResolvedValueOnce([{ id: 101 }]);
+        .mockResolvedValueOnce({ data: Array.from({ length: 100 }, (_, i) => ({ id: i + 1 })) })
+        .mockResolvedValueOnce({ data: [{ id: 101 }] });
 
       const mock = createMockExecuteFunctions({
         nodeParameters: {
@@ -92,7 +92,7 @@ describe("activities", () => {
             starts_at_to: "2025-12-31",
           },
         },
-        httpResponse: [],
+        httpResponse: { data: [] },
       });
 
       await activitiesGetAll.call(mock);
@@ -120,7 +120,7 @@ describe("activities", () => {
             reason_ids: "6, 7",
           },
         },
-        httpResponse: [],
+        httpResponse: { data: [] },
       });
 
       await activitiesGetAll.call(mock);
@@ -136,7 +136,7 @@ describe("activities", () => {
   describe("activityTypesGetAll", () => {
     it("sends GET to /v1/activity_types", async () => {
       const mock = createMockExecuteFunctions({
-        httpResponse: [{ id: 1, name: "Call" }, { id: 2, name: "Email" }],
+        httpResponse: { data: [{ id: 1, name: "Call" }, { id: 2, name: "Email" }] },
       });
 
       const result = await activityTypesGetAll.call(mock);
