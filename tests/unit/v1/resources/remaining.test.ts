@@ -139,11 +139,9 @@ describe("events", () => {
 
 describe("notes", () => {
   describe("getAll", () => {
-    it("sends GET to /v1/notes with filters", async () => {
+    it("sends GET to /v1/notes", async () => {
       const mock = createMockExecuteFunctions({
         nodeParameters: {
-          returnAll: false,
-          limit: 30,
           additionalFields: {},
         },
         httpResponse: [{ id: 1, body: "A note" }],
@@ -155,6 +153,33 @@ describe("notes", () => {
       expect(opts.method).toBe("GET");
       expect(opts.url).toBe("/v1/notes");
       expect(result).toHaveLength(1);
+      expect(result[0].json.body).toBe("A note");
+    });
+
+    it("passes filter parameters as query string", async () => {
+      const mock = createMockExecuteFunctions({
+        nodeParameters: {
+          additionalFields: {
+            broker: "5",
+            client: "10",
+            noteType: "3",
+            property: "20",
+            project: "7",
+            tag: "15",
+          },
+        },
+        httpResponse: [],
+      });
+
+      await notesGetAll.call(mock);
+
+      const opts = getHttpRequestOptions(mock);
+      expect(opts.qs.broker).toBe(5);
+      expect(opts.qs.client).toBe(10);
+      expect(opts.qs.note_type).toBe(3);
+      expect(opts.qs.property).toBe(20);
+      expect(opts.qs.project).toBe(7);
+      expect(opts.qs.tag).toBe(15);
     });
   });
 });
