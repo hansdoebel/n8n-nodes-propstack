@@ -6,7 +6,7 @@ import type {
 } from "n8n-workflow";
 
 import { API_ENDPOINTS } from "../../constants";
-import { extractResourceLocatorValue, propstackRequest } from "../../helpers";
+import { buildQs, extractResourceLocatorValue, propstackRequest, splitCsvInt, toInt } from "../../helpers";
 
 const showForEmailsUpdate = {
   operation: ["update"],
@@ -70,59 +70,21 @@ export const emailsUpdateDescription: INodeProperties[] = [
   },
 ];
 
-function buildEmailsUpdateBody(this: IExecuteFunctions): IDataObject {
-  const body: IDataObject = {};
-
-  const options = this.getNodeParameter(
-    "additionalFields",
-    0,
-  ) as IDataObject;
-
-  if (options) {
-    if (
-      options.read !== undefined && options.read !== ""
-    ) {
-      body.read = options.read;
-    }
-    if (
-      options.archived !== undefined &&
-      options.archived !== ""
-    ) {
-      body.archived = options.archived;
-    }
-    if (options.message_category_id) {
-      body.message_category_id = parseInt(
-        options.message_category_id as string,
-        10,
-      );
-    }
-    if (options.client_ids) {
-      body.client_ids = (options.client_ids as string)
-        .split(",")
-        .map((id) => parseInt(id.trim(), 10));
-    }
-    if (options.property_ids) {
-      body.property_ids = (options.property_ids as string)
-        .split(",")
-        .map((id) => parseInt(id.trim(), 10));
-    }
-    if (options.project_ids) {
-      body.project_ids = (options.project_ids as string)
-        .split(",")
-        .map((id) => parseInt(id.trim(), 10));
-    }
-  }
-
-  return body;
-}
-
 export async function emailsUpdate(
   this: IExecuteFunctions,
 ): Promise<INodeExecutionData[]> {
   const emailId = extractResourceLocatorValue(
     this.getNodeParameter("emailId", 0),
   );
-  const body = buildEmailsUpdateBody.call(this);
+  const options = this.getNodeParameter("additionalFields", 0) as IDataObject;
+  const body = buildQs(options, {
+    read: "read",
+    archived: "archived",
+    message_category_id: toInt("message_category_id"),
+    client_ids: splitCsvInt("client_ids"),
+    property_ids: splitCsvInt("property_ids"),
+    project_ids: splitCsvInt("project_ids"),
+  });
 
   const response = await propstackRequest.call(this, {
     method: "PUT",

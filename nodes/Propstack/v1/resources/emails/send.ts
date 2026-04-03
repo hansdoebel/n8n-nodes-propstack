@@ -6,7 +6,7 @@ import type {
 } from "n8n-workflow";
 
 import { API_ENDPOINTS } from "../../constants";
-import { propstackRequest } from "../../helpers";
+import { buildQs, propstackRequest, splitCsv, splitCsvInt, toInt } from "../../helpers";
 
 const showForEmailsSend = {
   operation: ["send"],
@@ -110,67 +110,25 @@ export const emailsSendDescription: INodeProperties[] = [
   },
 ];
 
-function buildEmailsSendBody(this: IExecuteFunctions): IDataObject {
-  const body: IDataObject = {};
-
-  body.broker_id = this.getNodeParameter("broker_id", 0) as string;
-  body.snippet_id = this.getNodeParameter("snippet_id", 0) as string;
-
-  const to = this.getNodeParameter("to", 0) as string;
-  body.to = to.split(",").map((email) => email.trim());
-
-  const options = this.getNodeParameter(
-    "additionalFields",
-    0,
-  ) as IDataObject;
-
-  if (options) {
-    if (options.cc) {
-      body.cc = (options.cc as string)
-        .split(",")
-        .map((email) => email.trim());
-    }
-    if (options.bcc) {
-      body.bcc = (options.bcc as string)
-        .split(",")
-        .map((email) => email.trim());
-    }
-    if (options.client_ids) {
-      body.client_ids = (options.client_ids as string)
-        .split(",")
-        .map((id) => parseInt(id.trim(), 10));
-    }
-    if (options.property_ids) {
-      body.property_ids = (options.property_ids as string)
-        .split(",")
-        .map((id) => parseInt(id.trim(), 10));
-    }
-    if (options.project_ids) {
-      body.project_ids = (options.project_ids as string)
-        .split(",")
-        .map((id) => parseInt(id.trim(), 10));
-    }
-    if (options.message_category_id) {
-      body.message_category_id = parseInt(
-        options.message_category_id as string,
-        10,
-      );
-    }
-    if (options.client_source_id) {
-      body.client_source_id = parseInt(
-        options.client_source_id as string,
-        10,
-      );
-    }
-  }
-
-  return body;
-}
-
 export async function emailsSend(
   this: IExecuteFunctions,
 ): Promise<INodeExecutionData[]> {
-  const body = buildEmailsSendBody.call(this);
+  const to = this.getNodeParameter("to", 0) as string;
+  const options = this.getNodeParameter("additionalFields", 0) as IDataObject;
+  const body: IDataObject = {
+    broker_id: this.getNodeParameter("broker_id", 0) as string,
+    snippet_id: this.getNodeParameter("snippet_id", 0) as string,
+    to: to.split(",").map((email) => email.trim()),
+    ...buildQs(options, {
+      cc: splitCsv("cc"),
+      bcc: splitCsv("bcc"),
+      client_ids: splitCsvInt("client_ids"),
+      property_ids: splitCsvInt("property_ids"),
+      project_ids: splitCsvInt("project_ids"),
+      message_category_id: toInt("message_category_id"),
+      client_source_id: toInt("client_source_id"),
+    }),
+  };
 
   const response = await propstackRequest.call(this, {
     method: "POST",

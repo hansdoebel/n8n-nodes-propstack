@@ -78,6 +78,14 @@ type MappingValue =
   | string
   | ((v: unknown) => [string, unknown] | undefined);
 
+export const splitCsvInt =
+  (key: string) =>
+  (v: unknown): [string, unknown] => [key, (v as string).split(",").map((s) => parseInt(s.trim(), 10))];
+
+export const toInt =
+  (key: string) =>
+  (v: unknown): [string, unknown] => [key, parseInt(v as string, 10)];
+
 export const splitCsv =
   (key: string) =>
   (v: unknown): [string, unknown] => [key, (v as string).split(",").map((s) => s.trim())];
