@@ -6,7 +6,7 @@ import type {
 } from "n8n-workflow";
 
 import { API_ENDPOINTS } from "../../constants";
-import { extractResourceLocatorValue, propstackRequest } from "../../helpers";
+import { buildQs, extractResourceLocatorValue, parseJson, propstackRequest, splitCsv } from "../../helpers";
 
 const showForContactsUpdate = {
   operation: ["update"],
@@ -197,75 +197,26 @@ export const contactsUpdateDescription: INodeProperties[] = [
   },
 ];
 
-function buildContactsUpdateBody(this: IExecuteFunctions): IDataObject {
-  const body: IDataObject = {};
-
-  const options = this.getNodeParameter(
-    "additionalFields",
-    0,
-  ) as IDataObject;
-
-  if (options) {
-    const fields = [
-      "salutation",
-      "first_name",
-      "last_name",
-      "email",
-      "phone_number",
-      "mobile_phone",
-      "company",
-      "position",
-      "street",
-      "house_number",
-      "postal_code",
-      "city",
-      "country",
-      "date_of_birth",
-      "status",
-      "source",
-      "notes",
-      "gdpr_status",
-    ];
-
-    for (const field of fields) {
-      if (
-        options[field] !== undefined && options[field] !== ""
-      ) {
-        body[field] = options[field];
-      }
-    }
-
-    if (options.group_ids) {
-      body.group_ids = (options.group_ids as string)
-        .split(",")
-        .map((id) => id.trim());
-    }
-
-    if (options.add_group_ids) {
-      body.add_group_ids = (options.add_group_ids as string)
-        .split(",")
-        .map((id) => id.trim());
-    }
-
-    if (options.sub_group_ids) {
-      body.sub_group_ids = (options.sub_group_ids as string)
-        .split(",")
-        .map((id) => id.trim());
-    }
-
-    if (options.partial_custom_fields) {
-      try {
-        body.partial_custom_fields = JSON.parse(
-          options.partial_custom_fields as string,
-        );
-      } catch {
-        body.partial_custom_fields = options.partial_custom_fields;
-      }
-    }
-  }
-
-  return body;
-}
+const CONTACT_BODY_MAPPING: Record<string, string> = {
+  salutation: "salutation",
+  first_name: "first_name",
+  last_name: "last_name",
+  email: "email",
+  phone_number: "phone_number",
+  mobile_phone: "mobile_phone",
+  company: "company",
+  position: "position",
+  street: "street",
+  house_number: "house_number",
+  postal_code: "postal_code",
+  city: "city",
+  country: "country",
+  date_of_birth: "date_of_birth",
+  status: "status",
+  source: "source",
+  notes: "notes",
+  gdpr_status: "gdpr_status",
+};
 
 export async function contactsUpdate(
   this: IExecuteFunctions,
@@ -273,7 +224,14 @@ export async function contactsUpdate(
   const contactId = extractResourceLocatorValue(
     this.getNodeParameter("contactId", 0),
   );
-  const body = buildContactsUpdateBody.call(this);
+  const options = this.getNodeParameter("additionalFields", 0) as IDataObject;
+  const body = buildQs(options, {
+    ...CONTACT_BODY_MAPPING,
+    group_ids: splitCsv("group_ids"),
+    add_group_ids: splitCsv("add_group_ids"),
+    sub_group_ids: splitCsv("sub_group_ids"),
+    partial_custom_fields: parseJson("partial_custom_fields"),
+  });
 
   const response = await propstackRequest.call(this, {
     method: "PUT",

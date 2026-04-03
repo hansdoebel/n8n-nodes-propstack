@@ -6,7 +6,7 @@ import type {
 } from "n8n-workflow";
 
 import { API_ENDPOINTS } from "../../constants";
-import { extractResourceLocatorValue, propstackRequest, simplifyResponse } from "../../helpers";
+import { buildQs, extractResourceLocatorValue, propstackRequest, simplifyResponse } from "../../helpers";
 
 const CONTACTS_SIMPLIFIED_FIELDS = [
   "id", "first_name", "last_name", "email", "phone_number",
@@ -74,28 +74,15 @@ export async function contactsGet(
   const contactId = extractResourceLocatorValue(
     this.getNodeParameter("contactId", 0),
   );
-  const options = this.getNodeParameter(
-    "additionalFields",
-    0,
-  ) as IDataObject;
+  const options = this.getNodeParameter("additionalFields", 0) as IDataObject;
 
-  const qs: IDataObject = {};
-
-  if (options) {
-    if (options.expand) qs.expand = options.expand;
-    if (options.include_children) {
-      qs.include_children = options.include_children;
-    }
-    if (options.include_documents) {
-      qs.include_documents = options.include_documents;
-    }
-    if (options.include_relationships) {
-      qs.include_relationships = options.include_relationships;
-    }
-    if (options.include_owned_properties) {
-      qs.include_owned_properties = options.include_owned_properties;
-    }
-  }
+  const qs = buildQs(options, {
+    expand: "expand",
+    include_children: "include_children",
+    include_documents: "include_documents",
+    include_relationships: "include_relationships",
+    include_owned_properties: "include_owned_properties",
+  });
 
   const response = await propstackRequest.call(this, {
     method: "GET",

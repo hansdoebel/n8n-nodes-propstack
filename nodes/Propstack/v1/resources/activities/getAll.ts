@@ -5,11 +5,7 @@ import type {
 } from "n8n-workflow";
 
 import { API_ENDPOINTS } from "../../constants";
-import { buildQs, propstackRequest } from "../../helpers";
-
-const splitIds =
-  (key: string) =>
-  (v: unknown): [string, unknown] => [key, (v as string).split(",").map((id) => id.trim())];
+import { buildQs, propstackRequest, splitCsv } from "../../helpers";
 
 export async function activitiesGetAll(
   this: IExecuteFunctions,
@@ -25,10 +21,10 @@ export async function activitiesGetAll(
     item_type: "item_type",
     not_completed: "not_completed",
     order: "order",
-    client_ids: splitIds("client_ids"),
-    project_ids: splitIds("project_ids"),
-    property_ids: splitIds("property_ids"),
-    reason_ids: splitIds("reason_ids"),
+    client_ids: splitCsv("client_ids"),
+    project_ids: splitCsv("project_ids"),
+    property_ids: splitCsv("property_ids"),
+    reason_ids: splitCsv("reason_ids"),
     starts_at_from: "starts_at_from",
     starts_at_to: "starts_at_to",
   });

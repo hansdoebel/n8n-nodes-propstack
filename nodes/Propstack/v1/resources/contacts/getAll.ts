@@ -6,7 +6,7 @@ import type {
 } from "n8n-workflow";
 
 import { API_ENDPOINTS } from "../../constants";
-import { propstackRequest, simplifyResponse } from "../../helpers";
+import { buildQs, propstackRequest, simplifyResponse, splitCsv } from "../../helpers";
 
 const CONTACTS_SIMPLIFIED_FIELDS = [
   "id", "first_name", "last_name", "email", "phone_number",
@@ -176,12 +176,23 @@ export async function contactsGetAll(
 ): Promise<INodeExecutionData[]> {
   const returnAll = this.getNodeParameter("returnAll", 0) as boolean;
   const limit = this.getNodeParameter("limit", 0, 50) as number;
-  const options = this.getNodeParameter(
-    "additionalFields",
-    0,
-  ) as IDataObject;
+  const options = this.getNodeParameter("additionalFields", 0) as IDataObject;
 
   const page = (options?.page as number) || 1;
+
+  const optionsQs = buildQs(options, {
+    expand: "expand",
+    sort_by: "sort_by",
+    order: "order",
+    q: "q",
+    email: "email",
+    phone_number: "phone_number",
+    archived: "archived",
+    gdpr_status: "gdpr_status",
+    group: splitCsv("group"),
+    status: splitCsv("status"),
+    sources: splitCsv("sources"),
+  });
 
   if (returnAll) {
     let allResults: IDataObject[] = [];
@@ -189,53 +200,10 @@ export async function contactsGetAll(
     let hasMore = true;
 
     while (hasMore) {
-      const qs: IDataObject = {
-        page: currentPage,
-        per: 100,
-      };
-
-      if (options) {
-        if (options.expand) qs.expand = options.expand;
-        if (options.sort_by) qs.sort_by = options.sort_by;
-        if (options.order) qs.order = options.order;
-        if (options.q) qs.q = options.q;
-        if (options.email) qs.email = options.email;
-        if (options.phone_number) {
-          qs.phone_number = options.phone_number;
-        }
-        if (
-          options.archived !== undefined &&
-          options.archived !== ""
-        ) {
-          qs.archived = options.archived;
-        }
-        if (
-          options.gdpr_status !== undefined &&
-          options.gdpr_status !== ""
-        ) {
-          qs.gdpr_status = options.gdpr_status;
-        }
-        if (options.group) {
-          qs.group = (options.group as string)
-            .split(",")
-            .map((id) => id.trim());
-        }
-        if (options.status) {
-          qs.status = (options.status as string)
-            .split(",")
-            .map((s) => s.trim());
-        }
-        if (options.sources) {
-          qs.sources = (options.sources as string)
-            .split(",")
-            .map((s) => s.trim());
-        }
-      }
-
       const response = await propstackRequest.call(this, {
         method: "GET",
         url: API_ENDPOINTS.CONTACTS_GET_ALL,
-        qs,
+        qs: { page: currentPage, per: 100, ...optionsQs },
       });
 
       const results = Array.isArray(response) ? response : [response];
@@ -254,53 +222,10 @@ export async function contactsGetAll(
     );
   }
 
-  const qs: IDataObject = {
-    page,
-    per: limit,
-  };
-
-  if (options) {
-    if (options.expand) qs.expand = options.expand;
-    if (options.sort_by) qs.sort_by = options.sort_by;
-    if (options.order) qs.order = options.order;
-    if (options.q) qs.q = options.q;
-    if (options.email) qs.email = options.email;
-    if (options.phone_number) {
-      qs.phone_number = options.phone_number;
-    }
-    if (
-      options.archived !== undefined &&
-      options.archived !== ""
-    ) {
-      qs.archived = options.archived;
-    }
-    if (
-      options.gdpr_status !== undefined &&
-      options.gdpr_status !== ""
-    ) {
-      qs.gdpr_status = options.gdpr_status;
-    }
-    if (options.group) {
-      qs.group = (options.group as string)
-        .split(",")
-        .map((id) => id.trim());
-    }
-    if (options.status) {
-      qs.status = (options.status as string)
-        .split(",")
-        .map((s) => s.trim());
-    }
-    if (options.sources) {
-      qs.sources = (options.sources as string)
-        .split(",")
-        .map((s) => s.trim());
-    }
-  }
-
   const response = await propstackRequest.call(this, {
     method: "GET",
     url: API_ENDPOINTS.CONTACTS_GET_ALL,
-    qs,
+    qs: { page, per: limit, ...optionsQs },
   });
 
   const data = Array.isArray(response) ? response : [response];

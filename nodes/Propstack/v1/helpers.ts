@@ -78,6 +78,20 @@ type MappingValue =
   | string
   | ((v: unknown) => [string, unknown] | undefined);
 
+export const splitCsv =
+  (key: string) =>
+  (v: unknown): [string, unknown] => [key, (v as string).split(",").map((s) => s.trim())];
+
+export const parseJson =
+  (key: string) =>
+  (v: unknown): [string, unknown] => {
+    try {
+      return [key, JSON.parse(v as string)];
+    } catch {
+      return [key, v];
+    }
+  };
+
 export function buildQs(
   additional: IDataObject,
   mapping: Record<string, MappingValue>,
