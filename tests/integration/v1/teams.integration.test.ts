@@ -1,77 +1,38 @@
 import { apiRequest, describeIf, hasApiToken } from "./testHelpers";
 
 describeIf(hasApiToken)("Integration: Teams", () => {
-  const createdIds: string[] = [];
-  const timestamp = Date.now();
-
-  afterAll(async () => {
-    for (const id of createdIds) {
-      try {
-        await apiRequest({ method: "DELETE", path: `/v1/teams/${id}` });
-      } catch {
-        // best-effort cleanup
-      }
-    }
-  });
-
-  it("creates a team", async () => {
-    const res = (await apiRequest({
-      method: "POST",
-      path: "/v1/teams",
-      body: {
-        name: `IntTest Team ${timestamp}`,
-      },
-    })) as Record<string, unknown>;
-
-    expect(res.id).toBeDefined();
-    createdIds.push(String(res.id));
-    expect(res.name).toBe(`IntTest Team ${timestamp}`);
-  });
-
-  it("gets a team by ID", async () => {
-    expect(createdIds.length).toBeGreaterThan(0);
-    const id = createdIds[0];
-
-    const res = (await apiRequest({
-      method: "GET",
-      path: `/v1/teams/${id}`,
-    })) as Record<string, unknown>;
-
-    expect(String(res.id)).toBe(id);
-  });
-
   it("lists teams", async () => {
     const res = (await apiRequest({
       method: "GET",
       path: "/v1/teams",
-      qs: { per: 5 },
-    })) as unknown[];
+    })) as Record<string, unknown>[];
 
     expect(Array.isArray(res)).toBe(true);
   });
 
-  it("updates a team", async () => {
-    expect(createdIds.length).toBeGreaterThan(0);
-    const id = createdIds[0];
-
+  it("each team has id, name, and broker_ids", async () => {
     const res = (await apiRequest({
-      method: "PUT",
-      path: `/v1/teams/${id}`,
-      body: {
-        name: `IntTest Team Updated ${timestamp}`,
-      },
-    })) as Record<string, unknown>;
+      method: "GET",
+      path: "/v1/teams",
+    })) as Record<string, unknown>[];
 
-    expect(res.name).toBe(`IntTest Team Updated ${timestamp}`);
+    if (res.length > 0) {
+      for (const team of res.slice(0, 5)) {
+        expect(team.id).toBeDefined();
+        expect(team.name).toBeDefined();
+        expect(team).toHaveProperty("broker_ids");
+      }
+    }
   });
 
-  it("deletes a team", async () => {
-    expect(createdIds.length).toBeGreaterThan(0);
-    const id = createdIds.pop()!;
+  it("accepts per param", async () => {
+    const res = (await apiRequest({
+      method: "GET",
+      path: "/v1/teams",
+      qs: { per: 1 },
+    })) as Record<string, unknown>[];
 
-    await apiRequest({
-      method: "DELETE",
-      path: `/v1/teams/${id}`,
-    });
+    expect(Array.isArray(res)).toBe(true);
+    expect(res.length).toBeLessThanOrEqual(1);
   });
 });

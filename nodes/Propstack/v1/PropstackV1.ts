@@ -80,13 +80,9 @@ import {
   tasksUpdate,
 } from "./resources/tasks";
 import {
-  teamsCreate,
-  teamsDelete,
   teamsFields,
-  teamsGet,
   teamsGetAll,
   teamsOperations,
-  teamsUpdate,
 } from "./resources/teams";
 import {
   activitiesFields,
@@ -416,11 +412,7 @@ export class PropstackV1 implements INodeType {
         update: tasksUpdate,
       },
       teams: {
-        create: teamsCreate,
-        delete: teamsDelete,
-        get: teamsGet,
         getAll: teamsGetAll,
-        update: teamsUpdate,
       },
       webhooks: {
         create: webhooksCreate,

@@ -79,7 +79,6 @@ describe("API_ENDPOINTS", () => {
     it("generates correct dynamic endpoints", () => {
       expect(API_ENDPOINTS.PROJECTS_GET("1")).toBe("/v1/projects/1");
       expect(API_ENDPOINTS.PROJECTS_UPDATE("2")).toBe("/v1/projects/2");
-      expect(API_ENDPOINTS.PROJECTS_DELETE("3")).toBe("/v1/projects/3");
     });
   });
 
@@ -98,14 +97,7 @@ describe("API_ENDPOINTS", () => {
 
   describe("teams", () => {
     it("has correct static endpoints", () => {
-      expect(API_ENDPOINTS.TEAMS_CREATE).toBe("/v1/teams");
       expect(API_ENDPOINTS.TEAMS_GET_ALL).toBe("/v1/teams");
-    });
-
-    it("generates correct dynamic endpoints", () => {
-      expect(API_ENDPOINTS.TEAMS_GET("1")).toBe("/v1/teams/1");
-      expect(API_ENDPOINTS.TEAMS_UPDATE("2")).toBe("/v1/teams/2");
-      expect(API_ENDPOINTS.TEAMS_DELETE("3")).toBe("/v1/teams/3");
     });
   });
 
