@@ -27,7 +27,6 @@ export const API_ENDPOINTS = {
   DOCUMENTS_UPDATE: (id: string) => `/v1/documents/${id}`,
   DOCUMENTS_TAGS_GET_ALL: "/v1/documents/tags",
   PROJECTS_CREATE: "/v1/projects",
-  PROJECTS_DELETE: (id: string) => `/v1/projects/${id}`,
   PROJECTS_GET: (id: string) => `/v1/projects/${id}`,
   PROJECTS_GET_ALL: "/v1/projects",
   PROJECTS_UPDATE: (id: string) => `/v1/projects/${id}`,

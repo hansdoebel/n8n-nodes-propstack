@@ -3,11 +3,9 @@ import { projectsCreate, projectsCreateDescription } from "./create";
 import { projectsGet, projectsGetDescription } from "./get";
 import { projectsGetAll, projectsGetAllDescription } from "./getAll";
 import { projectsUpdate, projectsUpdateDescription } from "./update";
-import { projectsDelete, projectsDeleteDescription } from "./delete";
 
 export {
   projectsCreate,
-  projectsDelete,
   projectsGet,
   projectsGetAll,
   projectsUpdate,
@@ -23,7 +21,7 @@ const projectIdField: INodeProperties = {
   displayOptions: {
     show: {
       resource: ["projects"],
-      operation: ["get", "update", "delete"],
+      operation: ["get", "update"],
     },
   },
   modes: [
@@ -65,12 +63,6 @@ export const projectsDescription: INodeProperties[] = [
         description: "Create a new project",
       },
       {
-        name: "Delete",
-        value: "delete",
-        action: "Delete project",
-        description: "Permanently remove a project",
-      },
-      {
         name: "Get",
         value: "get",
         action: "Get project",
@@ -110,5 +102,4 @@ export const projectsDescription: INodeProperties[] = [
     },
   },
   ...projectsUpdateDescription,
-  ...projectsDeleteDescription,
 ];

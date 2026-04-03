@@ -77,17 +77,23 @@ export const projectsGetAllDescription: INodeProperties[] = [
   },
 ];
 
+function buildGetAllQs(options: IDataObject): IDataObject {
+  const qs: IDataObject = {};
+  if (options?.expand) {
+    qs.expand = 1;
+  }
+  return qs;
+}
+
 export async function projectsGetAll(
   this: IExecuteFunctions,
 ): Promise<INodeExecutionData[]> {
   const returnAll = this.getNodeParameter("returnAll", 0) as boolean;
   const limit = this.getNodeParameter("limit", 0, 50) as number;
-  const options = this.getNodeParameter(
-    "additionalFields",
-    0,
-  ) as IDataObject;
+  const options = this.getNodeParameter("additionalFields", 0) as IDataObject;
+  const simplify = this.getNodeParameter("simplify", 0, true) as boolean;
 
-  const page = (options?.page as number) || 1;
+  const baseQs = buildGetAllQs(options);
 
   if (returnAll) {
     let allResults: IDataObject[] = [];
@@ -95,57 +101,33 @@ export async function projectsGetAll(
     let hasMore = true;
 
     while (hasMore) {
-      const qs: IDataObject = {
-        page: currentPage,
-        per: 100,
-      };
-
-      if (options?.expand) {
-        qs.expand = 1;
-      }
-
       const response = await propstackRequest.call(this, {
         method: "GET",
         url: API_ENDPOINTS.PROJECTS_GET_ALL,
-        qs,
+        qs: { ...baseQs, page: currentPage, per: 100 },
       });
 
       const results = Array.isArray(response) ? response : [response];
       allResults = allResults.concat(results);
-
-      if (results.length < 100) {
-        hasMore = false;
-      } else {
-        currentPage++;
-      }
+      hasMore = results.length >= 100;
+      currentPage++;
     }
 
-    const simplify = this.getNodeParameter("simplify", 0, true) as boolean;
     return this.helpers.returnJsonArray(
       simplify ? simplifyResponse(allResults, PROJECTS_SIMPLIFIED_FIELDS) : allResults,
     );
   }
 
-  const qs: IDataObject = {
-    page,
-    per: limit,
-  };
-
-  if (options?.expand) {
-    qs.expand = 1;
-  }
+  const page = (options?.page as number) || 1;
 
   const response = await propstackRequest.call(this, {
     method: "GET",
     url: API_ENDPOINTS.PROJECTS_GET_ALL,
-    qs,
+    qs: { ...baseQs, page, per: limit },
   });
 
   const data = Array.isArray(response) ? response : [response];
-  const simplify = this.getNodeParameter("simplify", 0, true) as boolean;
   return this.helpers.returnJsonArray(
     simplify ? simplifyResponse(data, PROJECTS_SIMPLIFIED_FIELDS) : data,
   );
 }
-
-export default projectsGetAllDescription;

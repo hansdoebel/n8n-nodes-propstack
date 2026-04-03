@@ -33,5 +33,3 @@ export async function projectsGet(
     simplify ? simplifyResponse(data as IDataObject[], PROJECTS_SIMPLIFIED_FIELDS) : data,
   );
 }
-
-export default projectsGetDescription;

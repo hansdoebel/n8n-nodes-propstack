@@ -6,11 +6,36 @@ import type {
 } from "n8n-workflow";
 
 import { API_ENDPOINTS } from "../../constants";
-import { propstackRequest } from "../../helpers";
+import { buildQs, propstackRequest, toInt } from "../../helpers";
 
 const showForProjectsCreate = {
   operation: ["create"],
   resource: ["projects"],
+};
+
+const PROJECT_BODY_MAPPING: Record<string, string | ((v: unknown) => [string, unknown])> = {
+  name: "name",
+  title: "title",
+  status: "status",
+  broker_id: toInt("broker_id"),
+  for_rent: "for_rent",
+  street: "street",
+  house_number: "house_number",
+  zip_code: "zip_code",
+  city: "city",
+  lat: "lat",
+  lng: "lng",
+  location_id: toInt("location_id"),
+  courtage: "courtage",
+  courtage_note: "courtage_note",
+  description_note: "description_note",
+  location_note: "location_note",
+  furnishing_note: "furnishing_note",
+  construction_year: "construction_year",
+  warning_notice: "warning_notice",
+  title_image: "title_image",
+  logo_url: "logo_url",
+  note: "note",
 };
 
 export const projectsCreateDescription: INodeProperties[] = [
@@ -137,6 +162,16 @@ export const projectsCreateDescription: INodeProperties[] = [
         description: "Project identifier",
       },
       {
+        displayName: "Note",
+        name: "note",
+        type: "string",
+        default: "",
+        description: "Project note",
+        typeOptions: {
+          rows: 4,
+        },
+      },
+      {
         displayName: "Status",
         name: "status",
         type: "options",
@@ -161,7 +196,7 @@ export const projectsCreateDescription: INodeProperties[] = [
         name: "title",
         type: "string",
         default: "",
-        description: "Exposé headline",
+        description: "Expose headline",
       },
       {
         displayName: "Title Image",
@@ -188,55 +223,11 @@ export const projectsCreateDescription: INodeProperties[] = [
   },
 ];
 
-function buildProjectsCreateBody(this: IExecuteFunctions): IDataObject {
-  const body: IDataObject = {};
-
-  const options = this.getNodeParameter(
-    "additionalFields",
-    0,
-  ) as IDataObject;
-
-  if (options) {
-    const fields = [
-      "name",
-      "title",
-      "status",
-      "broker_id",
-      "for_rent",
-      "street",
-      "house_number",
-      "zip_code",
-      "city",
-      "lat",
-      "lng",
-      "location_id",
-      "courtage",
-      "courtage_note",
-      "description_note",
-      "location_note",
-      "furnishing_note",
-      "construction_year",
-      "warning_notice",
-      "title_image",
-      "logo_url",
-    ];
-
-    for (const field of fields) {
-      if (
-        options[field] !== undefined && options[field] !== ""
-      ) {
-        body[field] = options[field];
-      }
-    }
-  }
-
-  return body;
-}
-
 export async function projectsCreate(
   this: IExecuteFunctions,
 ): Promise<INodeExecutionData[]> {
-  const body = buildProjectsCreateBody.call(this);
+  const options = this.getNodeParameter("additionalFields", 0) as IDataObject;
+  const body = buildQs(options, PROJECT_BODY_MAPPING);
 
   const response = await propstackRequest.call(this, {
     method: "POST",
@@ -248,5 +239,3 @@ export async function projectsCreate(
     Array.isArray(response) ? response : [response],
   );
 }
-
-export default projectsCreateDescription;

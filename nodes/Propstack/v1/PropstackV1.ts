@@ -65,7 +65,6 @@ import {
 } from "./resources/documents";
 import {
   projectsCreate,
-  projectsDelete,
   projectsDescription,
   projectsGet,
   projectsGetAll,
@@ -392,7 +391,6 @@ export class PropstackV1 implements INodeType {
       },
       projects: {
         create: projectsCreate,
-        delete: projectsDelete,
         get: projectsGet,
         getAll: projectsGetAll,
         update: projectsUpdate,
