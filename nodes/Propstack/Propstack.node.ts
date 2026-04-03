@@ -2,7 +2,7 @@ import type { INodeTypeBaseDescription, IVersionedNodeType } from "n8n-workflow"
 import { VersionedNodeType } from 'n8n-workflow';
 
 import { PropstackV1 } from "./v1/PropstackV1";
-import { PropstackV2 } from "./v2/PropstackV2";
+// import { PropstackV2 } from "./v2/PropstackV2";
 
 export class Propstack extends VersionedNodeType {
   constructor() {
@@ -22,7 +22,7 @@ export class Propstack extends VersionedNodeType {
 
     const nodeVersions: IVersionedNodeType["nodeVersions"] = {
       1: new PropstackV1(baseDescription),
-      2: new PropstackV2(baseDescription),
+      // 2: new PropstackV2(baseDescription),
     };
 
     super(nodeVersions, baseDescription);
