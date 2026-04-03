@@ -351,7 +351,7 @@ describe("searchProfiles", () => {
           limit: 10,
           additionalFields: {},
         },
-        httpResponse: [{ id: 1 }],
+        httpResponse: { data: [{ id: 1 }] },
       });
 
       const result = await searchProfilesGetAll.call(mock);
