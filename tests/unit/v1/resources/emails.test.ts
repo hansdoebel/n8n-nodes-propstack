@@ -1,6 +1,5 @@
 import { emailsSend } from "../../../../nodes/Propstack/v1/resources/emails/send";
 import { emailsGet } from "../../../../nodes/Propstack/v1/resources/emails/get";
-import { emailsGetAll } from "../../../../nodes/Propstack/v1/resources/emails/getAll";
 import { emailsUpdate } from "../../../../nodes/Propstack/v1/resources/emails/update";
 import { createMockExecuteFunctions, getHttpRequestOptions } from "../testHelpers";
 
@@ -113,25 +112,6 @@ describe("emails", () => {
     });
   });
 
-  describe("getAll", () => {
-    it("sends GET to /v1/messages with pagination", async () => {
-      const mock = createMockExecuteFunctions({
-        nodeParameters: {
-          returnAll: false,
-          limit: 30,
-          additionalFields: {},
-        },
-        httpResponse: [{ id: 1 }],
-      });
-
-      const result = await emailsGetAll.call(mock);
-
-      const opts = getHttpRequestOptions(mock);
-      expect(opts.method).toBe("GET");
-      expect(opts.url).toBe("/v1/messages");
-      expect(result).toHaveLength(1);
-    });
-  });
 
   describe("update", () => {
     it("sends PUT to /v1/messages/{id}", async () => {

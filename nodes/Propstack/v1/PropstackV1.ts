@@ -15,7 +15,6 @@ import {
   searchDeals,
   searchDealPipelines,
   searchDocuments,
-  searchEmails,
   searchParentFeatures,
   searchProjects,
   searchProperties,
@@ -51,7 +50,6 @@ import {
 import {
   emailsDescription,
   emailsGet,
-  emailsGetAll,
   emailsSend,
   emailsUpdate,
 } from "./resources/emails";
@@ -301,7 +299,6 @@ export class PropstackV1 implements INodeType {
       searchDeals,
       searchDealPipelines,
       searchDocuments,
-      searchEmails,
       searchParentFeatures,
       searchProjects,
       searchProperties,
@@ -364,7 +361,6 @@ export class PropstackV1 implements INodeType {
       },
       emails: {
         get: emailsGet,
-        getAll: emailsGetAll,
         send: emailsSend,
         update: emailsUpdate,
       },

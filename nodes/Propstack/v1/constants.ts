@@ -18,7 +18,6 @@ export const API_ENDPOINTS = {
   DEALS_UPDATE: (id: string) => `/v1/client_properties/${id}`,
   EMAILS_SEND: "/v1/messages",
   EMAILS_GET: (id: string) => `/v1/messages/${id}`,
-  EMAILS_GET_ALL: "/v1/messages",
   EMAILS_UPDATE: (id: string) => `/v1/messages/${id}`,
   DOCUMENTS_CREATE: "/v1/documents",
   DOCUMENTS_DELETE: (id: string) => `/v1/documents/${id}`,

@@ -1,17 +1,16 @@
 import type { INodeProperties } from "n8n-workflow";
 import { emailsSend, emailsSendDescription } from "./send";
-import { emailsGet, emailsGetDescription } from "./get";
-import { emailsGetAll, emailsGetAllDescription } from "./getAll";
+import { emailsGet } from "./get";
 import { emailsUpdate, emailsUpdateDescription } from "./update";
 
-export { emailsGet, emailsGetAll, emailsSend, emailsUpdate };
+export { emailsGet, emailsSend, emailsUpdate };
 
 const emailIdField: INodeProperties = {
   displayName: "Email",
   name: "emailId",
   type: "resourceLocator",
   required: true,
-  default: { mode: "list", value: "" },
+  default: { mode: "id", value: "" },
   description: "The email to operate on",
   displayOptions: {
     show: {
@@ -20,16 +19,6 @@ const emailIdField: INodeProperties = {
     },
   },
   modes: [
-    {
-      displayName: "From List",
-      name: "list",
-      type: "list",
-      typeOptions: {
-        searchListMethod: "searchEmails",
-        searchable: true,
-        searchFilterRequired: false,
-      },
-    },
     {
       displayName: "By ID",
       name: "id",
@@ -58,12 +47,6 @@ export const emailsDescription: INodeProperties[] = [
         description: "Retrieve an email",
       },
       {
-        name: "Get Many",
-        value: "getAll",
-        action: "Get many emails",
-        description: "Retrieve a list of emails",
-      },
-      {
         name: "Send",
         value: "send",
         action: "Send email",
@@ -79,8 +62,6 @@ export const emailsDescription: INodeProperties[] = [
     default: "send",
   },
   emailIdField,
-  ...emailsGetDescription,
-  ...emailsGetAllDescription,
   ...emailsSendDescription,
   ...emailsUpdateDescription,
 ];

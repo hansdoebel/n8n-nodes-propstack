@@ -143,30 +143,6 @@ export async function searchDocuments(
   return { results };
 }
 
-export async function searchEmails(
-  this: ILoadOptionsFunctions,
-  filter?: string,
-): Promise<INodeListSearchResult> {
-  const response = await propstackRequest.call(this, {
-    method: "GET",
-    url: API_ENDPOINTS.EMAILS_GET_ALL,
-    qs: { per: 100 },
-  });
-  const items = Array.isArray(response) ? response : [response];
-  let results = items
-    .filter((item: IDataObject) => item && item.id)
-    .map((item: IDataObject) => ({
-      name: String(item.subject || `Email #${item.id}`),
-      value: String(item.id),
-    }));
-  if (filter) {
-    const lowerFilter = filter.toLowerCase();
-    results = results.filter((r) =>
-      r.name.toLowerCase().includes(lowerFilter),
-    );
-  }
-  return { results };
-}
 
 export async function searchParentFeatures(
   this: ILoadOptionsFunctions,

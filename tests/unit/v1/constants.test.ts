@@ -47,7 +47,6 @@ describe("API_ENDPOINTS", () => {
   describe("emails", () => {
     it("has correct static endpoints", () => {
       expect(API_ENDPOINTS.EMAILS_SEND).toBe("/v1/messages");
-      expect(API_ENDPOINTS.EMAILS_GET_ALL).toBe("/v1/messages");
     });
 
     it("generates correct dynamic endpoints", () => {

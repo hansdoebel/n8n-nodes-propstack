@@ -1,13 +1,10 @@
 import type {
   IExecuteFunctions,
   INodeExecutionData,
-  INodeProperties,
 } from "n8n-workflow";
 
 import { API_ENDPOINTS } from "../../constants";
 import { extractResourceLocatorValue, propstackRequest } from "../../helpers";
-
-export const emailsGetDescription: INodeProperties[] = [];
 
 export async function emailsGet(
   this: IExecuteFunctions,
@@ -25,5 +22,3 @@ export async function emailsGet(
     Array.isArray(response) ? response : [response],
   );
 }
-
-export default emailsGetDescription;

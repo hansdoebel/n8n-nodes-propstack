@@ -4,7 +4,6 @@ import {
   searchDeals,
   searchDealPipelines,
   searchDocuments,
-  searchEmails,
   searchParentFeatures,
   searchProjects,
   searchProperties,
@@ -266,27 +265,6 @@ describe("listSearch", () => {
     });
   });
 
-  describe("searchEmails", () => {
-    it("returns email subjects", async () => {
-      const mock = createMockLoadOptionsFunctions({
-        httpResponse: [{ id: 1, subject: "Re: Property Inquiry" }],
-      });
-
-      const result = await searchEmails.call(mock);
-
-      expect(result.results).toEqual([{ name: "Re: Property Inquiry", value: "1" }]);
-    });
-
-    it("uses fallback for missing subject", async () => {
-      const mock = createMockLoadOptionsFunctions({
-        httpResponse: [{ id: 3 }],
-      });
-
-      const result = await searchEmails.call(mock);
-
-      expect(result.results).toEqual([{ name: "Email #3", value: "3" }]);
-    });
-  });
 
   describe("searchParentFeatures", () => {
     it("fetches for all three entity types", async () => {
