@@ -6,11 +6,49 @@ import type {
 } from "n8n-workflow";
 
 import { API_ENDPOINTS } from "../../constants";
-import { extractResourceLocatorValue, propstackRequest } from "../../helpers";
+import { buildQs, extractResourceLocatorValue, parseJson, propstackRequest } from "../../helpers";
 
 const showForPropertiesUpdate = {
   operation: ["update"],
   resource: ["properties"],
+};
+
+const PROPERTY_BODY_MAPPING: Record<string, string | ((v: unknown) => [string, unknown])> = {
+  unit_id: "unit_id",
+  exposee_id: "exposee_id",
+  object_type: "object_type",
+  rs_type: "rs_type",
+  rs_category: "rs_category",
+  marketing_type: "marketing_type",
+  title: "title",
+  description_note: "description_note",
+  street: "street",
+  street_number: "street_number",
+  zip: "zip",
+  city: "city",
+  country: "country",
+  district: "district",
+  price: "price",
+  base_rent: "base_rent",
+  total_rent: "total_rent",
+  living_space: "living_space",
+  property_space_value: "property_space_value",
+  plot_area: "plot_area",
+  number_of_rooms: "number_of_rooms",
+  number_of_bed_rooms: "number_of_bed_rooms",
+  number_of_bath_rooms: "number_of_bath_rooms",
+  floor: "floor",
+  construction_year: "construction_year",
+  status: "status",
+  project_id: "project_id",
+  location_note: "location_note",
+  furnishing_note: "furnishing_note",
+  other_note: "other_note",
+  courtage: "courtage",
+  include_translations: "include_translations",
+  locale: "locale",
+  partial_custom_fields: parseJson("partial_custom_fields"),
+  relationships_attributes: parseJson("relationships_attributes"),
 };
 
 export const propertiesUpdateDescription: INodeProperties[] = [
@@ -94,7 +132,7 @@ export const propertiesUpdateDescription: INodeProperties[] = [
         name: "exposee_id",
         type: "string",
         default: "",
-        description: "External expos\u00e9 identifier",
+        description: "External expose identifier",
       },
       {
         displayName: "Floor",
@@ -306,91 +344,14 @@ export const propertiesUpdateDescription: INodeProperties[] = [
   },
 ];
 
-function buildPropertiesUpdateBody(this: IExecuteFunctions): IDataObject {
-  const body: IDataObject = {};
-
-  const options = this.getNodeParameter(
-    "additionalFields",
-    0,
-  ) as IDataObject;
-
-  if (options) {
-    const fields = [
-      "unit_id",
-      "exposee_id",
-      "object_type",
-      "rs_type",
-      "rs_category",
-      "marketing_type",
-      "title",
-      "description_note",
-      "street",
-      "street_number",
-      "zip",
-      "city",
-      "country",
-      "district",
-      "price",
-      "base_rent",
-      "total_rent",
-      "living_space",
-      "property_space_value",
-      "plot_area",
-      "number_of_rooms",
-      "number_of_bed_rooms",
-      "number_of_bath_rooms",
-      "floor",
-      "construction_year",
-      "status",
-      "project_id",
-      "location_note",
-      "furnishing_note",
-      "other_note",
-      "courtage",
-      "include_translations",
-      "locale",
-    ];
-
-    for (const field of fields) {
-      if (
-        options[field] !== undefined && options[field] !== ""
-      ) {
-        body[field] = options[field];
-      }
-    }
-
-    if (options.partial_custom_fields) {
-      try {
-        body.partial_custom_fields = JSON.parse(
-          options.partial_custom_fields as string,
-        );
-      } catch {
-        body.partial_custom_fields = options.partial_custom_fields;
-      }
-    }
-
-    if (options.relationships_attributes) {
-      try {
-        body.relationships_attributes = JSON.parse(
-          options.relationships_attributes as string,
-        );
-      } catch {
-        body.relationships_attributes =
-          options.relationships_attributes;
-      }
-    }
-  }
-
-  return body;
-}
-
 export async function propertiesUpdate(
   this: IExecuteFunctions,
 ): Promise<INodeExecutionData[]> {
   const propertyId = extractResourceLocatorValue(
     this.getNodeParameter("propertyId", 0),
   );
-  const body = buildPropertiesUpdateBody.call(this);
+  const options = this.getNodeParameter("additionalFields", 0) as IDataObject;
+  const body = buildQs(options, PROPERTY_BODY_MAPPING);
 
   const response = await propstackRequest.call(this, {
     method: "PUT",
@@ -402,5 +363,3 @@ export async function propertiesUpdate(
     Array.isArray(response) ? response : [response],
   );
 }
-
-export default propertiesUpdateDescription;

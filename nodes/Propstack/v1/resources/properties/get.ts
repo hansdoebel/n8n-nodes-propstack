@@ -6,7 +6,7 @@ import type {
 } from "n8n-workflow";
 
 import { API_ENDPOINTS } from "../../constants";
-import { extractResourceLocatorValue, propstackRequest, simplifyResponse } from "../../helpers";
+import { buildQs, extractResourceLocatorValue, propstackRequest, simplifyResponse } from "../../helpers";
 
 const PROPERTIES_SIMPLIFIED_FIELDS = [
   "id", "title", "object_type", "marketing_type", "price",
@@ -56,20 +56,13 @@ export async function propertiesGet(
   const propertyId = extractResourceLocatorValue(
     this.getNodeParameter("propertyId", 0),
   );
-  const options = this.getNodeParameter(
-    "additionalFields",
-    0,
-  ) as IDataObject;
+  const options = this.getNodeParameter("additionalFields", 0) as IDataObject;
 
-  const qs: IDataObject = {};
-
-  if (options) {
-    if (options.new !== false) {
-      qs.new = 1;
-    }
-    if (options.include_translations) {
-      qs.include_translations = options.include_translations;
-    }
+  const qs = buildQs(options, {
+    include_translations: "include_translations",
+  });
+  if (options?.new !== false) {
+    qs.new = 1;
   }
 
   const response = await propstackRequest.call(this, {
@@ -81,8 +74,6 @@ export async function propertiesGet(
   const data = Array.isArray(response) ? response : [response];
   const simplify = this.getNodeParameter("simplify", 0, true) as boolean;
   return this.helpers.returnJsonArray(
-    simplify ? simplifyResponse(data, PROPERTIES_SIMPLIFIED_FIELDS) : data,
+    simplify ? simplifyResponse(data as IDataObject[], PROPERTIES_SIMPLIFIED_FIELDS) : data,
   );
 }
-
-export default propertiesGetDescription;

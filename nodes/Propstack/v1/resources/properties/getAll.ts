@@ -6,7 +6,7 @@ import type {
 } from "n8n-workflow";
 
 import { API_ENDPOINTS } from "../../constants";
-import { propstackRequest, simplifyResponse } from "../../helpers";
+import { buildQs, propstackRequest, simplifyResponse, splitCsv } from "../../helpers";
 
 const PROPERTIES_SIMPLIFIED_FIELDS = [
   "id", "title", "object_type", "marketing_type", "price",
@@ -17,6 +17,51 @@ const PROPERTIES_SIMPLIFIED_FIELDS = [
 const showForPropertiesGetAll = {
   operation: ["getAll"],
   resource: ["properties"],
+};
+
+const skipZero =
+  (key: string) =>
+  (v: unknown): [string, unknown] | undefined =>
+    v === 0 ? undefined : [key, v];
+
+const GETALL_QS_MAPPING: Record<string, string | ((v: unknown) => [string, unknown] | undefined)> = {
+  expand: "expand",
+  include_translations: "include_translations",
+  sort_by: "sort_by",
+  order: "order",
+  q: "q",
+  status: "status",
+  country: "country",
+  marketing_type: "marketing_type",
+  rs_type: "rs_type",
+  project_id: "project_id",
+  archived: "archived",
+  property_ids: splitCsv("property_ids"),
+  include_variants: "include_variants",
+  exact: "exact",
+  group: "group",
+  price_from: skipZero("price_from"),
+  price_to: skipZero("price_to"),
+  base_rent_from: skipZero("base_rent_from"),
+  base_rent_to: skipZero("base_rent_to"),
+  total_rent_from: skipZero("total_rent_from"),
+  total_rent_to: skipZero("total_rent_to"),
+  property_space_value_from: skipZero("property_space_value_from"),
+  property_space_value_to: skipZero("property_space_value_to"),
+  living_space_from: skipZero("living_space_from"),
+  living_space_to: skipZero("living_space_to"),
+  plot_area_from: skipZero("plot_area_from"),
+  plot_area_to: skipZero("plot_area_to"),
+  number_of_rooms_from: skipZero("number_of_rooms_from"),
+  number_of_rooms_to: skipZero("number_of_rooms_to"),
+  number_of_bed_rooms_from: skipZero("number_of_bed_rooms_from"),
+  number_of_bed_rooms_to: skipZero("number_of_bed_rooms_to"),
+  number_of_bath_rooms_from: skipZero("number_of_bath_rooms_from"),
+  number_of_bath_rooms_to: skipZero("number_of_bath_rooms_to"),
+  floor_from: skipZero("floor_from"),
+  floor_to: skipZero("floor_to"),
+  construction_year_from: skipZero("construction_year_from"),
+  construction_year_to: skipZero("construction_year_to"),
 };
 
 export const propertiesGetAllDescription: INodeProperties[] = [
@@ -315,17 +360,23 @@ export const propertiesGetAllDescription: INodeProperties[] = [
   },
 ];
 
+function extractData(response: unknown): IDataObject[] {
+  const body = response as IDataObject;
+  if (Array.isArray(body.data)) return body.data as IDataObject[];
+  if (Array.isArray(response)) return response as IDataObject[];
+  return [body];
+}
+
 export async function propertiesGetAll(
   this: IExecuteFunctions,
 ): Promise<INodeExecutionData[]> {
   const returnAll = this.getNodeParameter("returnAll", 0) as boolean;
   const limit = this.getNodeParameter("limit", 0, 50) as number;
-  const options = this.getNodeParameter(
-    "additionalFields",
-    0,
-  ) as IDataObject;
+  const options = this.getNodeParameter("additionalFields", 0) as IDataObject;
+  const simplify = this.getNodeParameter("simplify", 0, true) as boolean;
 
-  const page = (options?.page as number) || 1;
+  const optionsQs = buildQs(options, GETALL_QS_MAPPING);
+  if (options?.with_meta !== false) optionsQs.with_meta = 1;
 
   if (returnAll) {
     let allResults: IDataObject[] = [];
@@ -333,187 +384,33 @@ export async function propertiesGetAll(
     let hasMore = true;
 
     while (hasMore) {
-      const qs: IDataObject = {
-        page: currentPage,
-        per: 100,
-      };
-
-      if (options) {
-        if (options.with_meta !== false) qs.with_meta = 1;
-        if (options.expand) qs.expand = options.expand;
-        if (options.include_translations) {
-          qs.include_translations = options.include_translations;
-        }
-        if (options.sort_by) qs.sort_by = options.sort_by;
-        if (options.order) qs.order = options.order;
-        if (options.q) qs.q = options.q;
-        if (options.status) qs.status = options.status;
-        if (options.country) qs.country = options.country;
-        if (options.marketing_type) {
-          qs.marketing_type = options.marketing_type;
-        }
-        if (options.rs_type) qs.rs_type = options.rs_type;
-        if (options.project_id) {
-          qs.project_id = options.project_id;
-        }
-        if (
-          options.archived !== undefined &&
-          options.archived !== ""
-        ) {
-          qs.archived = options.archived;
-        }
-        if (options.property_ids) {
-          qs.property_ids = (options.property_ids as string)
-            .split(",")
-            .map((id) => id.trim());
-        }
-        if (options.include_variants) {
-          qs.include_variants = options.include_variants;
-        }
-        if (options.exact) qs.exact = options.exact;
-        if (options.group) qs.group = options.group;
-
-        const rangeFields = [
-          "price",
-          "base_rent",
-          "total_rent",
-          "property_space_value",
-          "living_space",
-          "plot_area",
-          "number_of_rooms",
-          "number_of_bed_rooms",
-          "number_of_bath_rooms",
-          "floor",
-          "construction_year",
-        ];
-
-        for (const field of rangeFields) {
-          const fromKey = `${field}_from`;
-          const toKey = `${field}_to`;
-          if (
-            options[fromKey] !== undefined &&
-            options[fromKey] !== 0 &&
-            options[fromKey] !== ""
-          ) {
-            qs[fromKey] = options[fromKey];
-          }
-          if (
-            options[toKey] !== undefined &&
-            options[toKey] !== 0 &&
-            options[toKey] !== ""
-          ) {
-            qs[toKey] = options[toKey];
-          }
-        }
-      }
-
       const response = await propstackRequest.call(this, {
         method: "GET",
         url: API_ENDPOINTS.PROPERTIES_GET_ALL,
-        qs,
+        qs: { ...optionsQs, page: currentPage, per: 100 },
       });
 
-      const results = Array.isArray(response) ? response : [response];
+      const results = extractData(response);
       allResults = allResults.concat(results);
-
-      if (results.length < 100) {
-        hasMore = false;
-      } else {
-        currentPage++;
-      }
+      hasMore = results.length >= 100;
+      currentPage++;
     }
 
-    const simplify = this.getNodeParameter("simplify", 0, true) as boolean;
     return this.helpers.returnJsonArray(
       simplify ? simplifyResponse(allResults, PROPERTIES_SIMPLIFIED_FIELDS) : allResults,
     );
   }
 
-  const qs: IDataObject = {
-    page,
-    per: limit,
-  };
-
-  if (options) {
-    if (options.with_meta !== false) qs.with_meta = 1;
-    if (options.expand) qs.expand = options.expand;
-    if (options.include_translations) {
-      qs.include_translations = options.include_translations;
-    }
-    if (options.sort_by) qs.sort_by = options.sort_by;
-    if (options.order) qs.order = options.order;
-    if (options.q) qs.q = options.q;
-    if (options.status) qs.status = options.status;
-    if (options.country) qs.country = options.country;
-    if (options.marketing_type) {
-      qs.marketing_type = options.marketing_type;
-    }
-    if (options.rs_type) qs.rs_type = options.rs_type;
-    if (options.project_id) {
-      qs.project_id = options.project_id;
-    }
-    if (
-      options.archived !== undefined &&
-      options.archived !== ""
-    ) {
-      qs.archived = options.archived;
-    }
-    if (options.property_ids) {
-      qs.property_ids = (options.property_ids as string)
-        .split(",")
-        .map((id) => id.trim());
-    }
-    if (options.include_variants) {
-      qs.include_variants = options.include_variants;
-    }
-    if (options.exact) qs.exact = options.exact;
-    if (options.group) qs.group = options.group;
-
-    const rangeFields = [
-      "price",
-      "base_rent",
-      "total_rent",
-      "property_space_value",
-      "living_space",
-      "plot_area",
-      "number_of_rooms",
-      "number_of_bed_rooms",
-      "number_of_bath_rooms",
-      "floor",
-      "construction_year",
-    ];
-
-    for (const field of rangeFields) {
-      const fromKey = `${field}_from`;
-      const toKey = `${field}_to`;
-      if (
-        options[fromKey] !== undefined &&
-        options[fromKey] !== 0 &&
-        options[fromKey] !== ""
-      ) {
-        qs[fromKey] = options[fromKey];
-      }
-      if (
-        options[toKey] !== undefined &&
-        options[toKey] !== 0 &&
-        options[toKey] !== ""
-      ) {
-        qs[toKey] = options[toKey];
-      }
-    }
-  }
+  const page = (options?.page as number) || 1;
 
   const response = await propstackRequest.call(this, {
     method: "GET",
     url: API_ENDPOINTS.PROPERTIES_GET_ALL,
-    qs,
+    qs: { ...optionsQs, page, per: limit },
   });
 
-  const data = Array.isArray(response) ? response : [response];
-  const simplify = this.getNodeParameter("simplify", 0, true) as boolean;
+  const data = extractData(response);
   return this.helpers.returnJsonArray(
     simplify ? simplifyResponse(data, PROPERTIES_SIMPLIFIED_FIELDS) : data,
   );
 }
-
-export default propertiesGetAllDescription;

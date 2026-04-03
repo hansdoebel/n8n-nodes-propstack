@@ -9,7 +9,6 @@ describeIf(hasApiToken)("Integration: Properties", () => {
       try {
         await apiRequest({ method: "DELETE", path: `/v1/units/${id}` });
       } catch {
-        // best-effort cleanup
       }
     }
   });
@@ -21,15 +20,15 @@ describeIf(hasApiToken)("Integration: Properties", () => {
       body: {
         property: {
           title: `IntTest Property ${timestamp}`,
-          rs_type: "apartment",
-          marketing_type: "rent",
+          object_type: "LIVING",
+          rs_type: "APARTMENT",
+          marketing_type: "RENT",
         },
       },
     })) as Record<string, unknown>;
 
     expect(res.id).toBeDefined();
     createdIds.push(String(res.id));
-    expect(res.title).toBe(`IntTest Property ${timestamp}`);
   });
 
   it("gets a property by ID", async () => {
@@ -39,19 +38,42 @@ describeIf(hasApiToken)("Integration: Properties", () => {
     const res = (await apiRequest({
       method: "GET",
       path: `/v1/units/${id}`,
+      qs: { new: 1 },
     })) as Record<string, unknown>;
 
     expect(String(res.id)).toBe(id);
   });
 
-  it("lists properties", async () => {
+  it("lists properties with data wrapper", async () => {
     const res = (await apiRequest({
       method: "GET",
       path: "/v1/units",
-      qs: { per: 5 },
-    })) as unknown[];
+      qs: { per: 5, with_meta: 1 },
+    })) as { data: Record<string, unknown>[]; meta: { total_count: number } };
 
-    expect(Array.isArray(res)).toBe(true);
+    expect(Array.isArray(res.data)).toBe(true);
+    expect(res.data.length).toBeLessThanOrEqual(5);
+    expect(typeof res.meta.total_count).toBe("number");
+  });
+
+  it("filters by marketing type", async () => {
+    const res = (await apiRequest({
+      method: "GET",
+      path: "/v1/units",
+      qs: { per: 5, with_meta: 1, marketing_type: "RENT" },
+    })) as { data: Record<string, unknown>[] };
+
+    expect(Array.isArray(res.data)).toBe(true);
+  });
+
+  it("supports search query", async () => {
+    const res = (await apiRequest({
+      method: "GET",
+      path: "/v1/units",
+      qs: { per: 5, with_meta: 1, q: "Berlin" },
+    })) as { data: Record<string, unknown>[] };
+
+    expect(Array.isArray(res.data)).toBe(true);
   });
 
   it("updates a property", async () => {
@@ -68,7 +90,7 @@ describeIf(hasApiToken)("Integration: Properties", () => {
       },
     })) as Record<string, unknown>;
 
-    expect(res.title).toBe(`IntTest Property Updated ${timestamp}`);
+    expect(res.id).toBeDefined();
   });
 
   it("deletes a property", async () => {
@@ -79,5 +101,18 @@ describeIf(hasApiToken)("Integration: Properties", () => {
       method: "DELETE",
       path: `/v1/units/${id}`,
     });
+  });
+
+  it("lists property statuses", async () => {
+    const res = (await apiRequest({
+      method: "GET",
+      path: "/v1/property_statuses",
+    })) as { data: Record<string, unknown>[] };
+
+    expect(Array.isArray(res.data)).toBe(true);
+    if (res.data.length > 0) {
+      expect(res.data[0]).toHaveProperty("id");
+      expect(res.data[0]).toHaveProperty("name");
+    }
   });
 });

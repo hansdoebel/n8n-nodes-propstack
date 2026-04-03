@@ -6,14 +6,107 @@ import type {
 } from "n8n-workflow";
 
 import { API_ENDPOINTS } from "../../constants";
-import { propstackRequest } from "../../helpers";
+import { buildQs, parseJson, propstackRequest } from "../../helpers";
 
 const showForPropertiesCreate = {
   operation: ["create"],
   resource: ["properties"],
 };
 
+const PROPERTY_BODY_MAPPING: Record<string, string | ((v: unknown) => [string, unknown])> = {
+  unit_id: "unit_id",
+  exposee_id: "exposee_id",
+  object_type: "object_type",
+  rs_type: "rs_type",
+  rs_category: "rs_category",
+  marketing_type: "marketing_type",
+  title: "title",
+  description_note: "description_note",
+  street: "street",
+  street_number: "street_number",
+  zip: "zip",
+  city: "city",
+  country: "country",
+  district: "district",
+  price: "price",
+  base_rent: "base_rent",
+  total_rent: "total_rent",
+  living_space: "living_space",
+  property_space_value: "property_space_value",
+  plot_area: "plot_area",
+  number_of_rooms: "number_of_rooms",
+  number_of_bed_rooms: "number_of_bed_rooms",
+  number_of_bath_rooms: "number_of_bath_rooms",
+  floor: "floor",
+  construction_year: "construction_year",
+  status: "status",
+  project_id: "project_id",
+  location_note: "location_note",
+  furnishing_note: "furnishing_note",
+  other_note: "other_note",
+  courtage: "courtage",
+  include_translations: "include_translations",
+  locale: "locale",
+  partial_custom_fields: parseJson("partial_custom_fields"),
+  relationships_attributes: parseJson("relationships_attributes"),
+};
+
 export const propertiesCreateDescription: INodeProperties[] = [
+  {
+    displayName: "Object Type",
+    name: "object_type",
+    type: "options",
+    required: true,
+    default: "LIVING",
+    displayOptions: {
+      show: showForPropertiesCreate,
+    },
+    options: [
+      { name: "Living", value: "LIVING" },
+      { name: "Commercial", value: "COMMERCIAL" },
+      { name: "Investment", value: "INVESTMENT" },
+    ],
+    description: "Property category (Oberkategorie)",
+  },
+  {
+    displayName: "Real Estate Type",
+    name: "rs_type",
+    type: "options",
+    required: true,
+    default: "APARTMENT",
+    displayOptions: {
+      show: showForPropertiesCreate,
+    },
+    options: [
+      { name: "Apartment", value: "APARTMENT" },
+      { name: "Garage", value: "GARAGE" },
+      { name: "Gastronomy", value: "GASTRONOMY" },
+      { name: "House", value: "HOUSE" },
+      { name: "Industry", value: "INDUSTRY" },
+      { name: "Investment", value: "INVESTMENT" },
+      { name: "Office", value: "OFFICE" },
+      { name: "Short Term Accommodation", value: "SHORT_TERM_ACCOMODATION" },
+      { name: "Special Purpose", value: "SPECIAL_PURPOSE" },
+      { name: "Store", value: "STORE" },
+      { name: "Trade Site", value: "TRADE_SITE" },
+    ],
+    description: "Real estate type classification (Kategorie)",
+  },
+  {
+    displayName: "Marketing Type",
+    name: "marketing_type",
+    type: "options",
+    required: true,
+    default: "BUY",
+    displayOptions: {
+      show: showForPropertiesCreate,
+    },
+    options: [
+      { name: "Buy", value: "BUY" },
+      { name: "Rent", value: "RENT" },
+    ],
+    description: "Whether property is for sale or rent (Kauf/Miete)",
+  },
   {
     displayName: "Additional Fields",
     name: "additionalFields",
@@ -87,7 +180,7 @@ export const propertiesCreateDescription: INodeProperties[] = [
         name: "exposee_id",
         type: "string",
         default: "",
-        description: "External exposé identifier",
+        description: "External expose identifier",
       },
       {
         displayName: "Floor",
@@ -129,17 +222,6 @@ export const propertiesCreateDescription: INodeProperties[] = [
         description: "Locale for the property data (default: de)",
       },
       {
-        displayName: "Marketing Type",
-        name: "marketing_type",
-        type: "options",
-        default: "BUY",
-        options: [
-          { name: "Buy", value: "BUY" },
-          { name: "Rent", value: "RENT" },
-        ],
-        description: "Marketing type for the property",
-      },
-      {
         displayName: "Number of Bathrooms",
         name: "number_of_bath_rooms",
         type: "number",
@@ -157,18 +239,6 @@ export const propertiesCreateDescription: INodeProperties[] = [
         type: "number",
         default: 0,
         description: "Total number of rooms",
-      },
-      {
-        displayName: "Object Type",
-        name: "object_type",
-        type: "options",
-        default: "LIVING",
-        options: [
-          { name: "Living", value: "LIVING" },
-          { name: "Commercial", value: "COMMERCIAL" },
-          { name: "Investment", value: "INVESTMENT" },
-        ],
-        description: "Type of property object",
       },
       {
         displayName: "Other Note",
@@ -222,29 +292,6 @@ export const propertiesCreateDescription: INodeProperties[] = [
         description: "Real estate category (e.g., PENTHOUSE, LOFT, VILLA)",
       },
       {
-        displayName: "Real Estate Type",
-        name: "rs_type",
-        type: "options",
-        default: "APARTMENT",
-        options: [
-          { name: "Apartment", value: "APARTMENT" },
-          { name: "Garage", value: "GARAGE" },
-          { name: "Gastronomy", value: "GASTRONOMY" },
-          { name: "House", value: "HOUSE" },
-          { name: "Industry", value: "INDUSTRY" },
-          { name: "Investment", value: "INVESTMENT" },
-          { name: "Office", value: "OFFICE" },
-          {
-            name: "Short Term Accommodation",
-            value: "SHORT_TERM_ACCOMODATION",
-          },
-          { name: "Special Purpose", value: "SPECIAL_PURPOSE" },
-          { name: "Store", value: "STORE" },
-          { name: "Trade Site", value: "TRADE_SITE" },
-        ],
-        description: "Real estate type classification",
-      },
-      {
         displayName: "Relationships",
         name: "relationships_attributes",
         type: "string",
@@ -289,88 +336,15 @@ export const propertiesCreateDescription: INodeProperties[] = [
   },
 ];
 
-function buildPropertiesCreateBody(this: IExecuteFunctions): IDataObject {
-  const body: IDataObject = {};
-
-  const options = this.getNodeParameter(
-    "additionalFields",
-    0,
-  ) as IDataObject;
-
-  if (options) {
-    const fields = [
-      "unit_id",
-      "exposee_id",
-      "object_type",
-      "rs_type",
-      "rs_category",
-      "marketing_type",
-      "title",
-      "description_note",
-      "street",
-      "street_number",
-      "zip",
-      "city",
-      "country",
-      "district",
-      "price",
-      "base_rent",
-      "total_rent",
-      "living_space",
-      "property_space_value",
-      "plot_area",
-      "number_of_rooms",
-      "number_of_bed_rooms",
-      "number_of_bath_rooms",
-      "floor",
-      "construction_year",
-      "status",
-      "project_id",
-      "location_note",
-      "furnishing_note",
-      "other_note",
-      "courtage",
-      "include_translations",
-      "locale",
-    ];
-
-    for (const field of fields) {
-      if (
-        options[field] !== undefined && options[field] !== ""
-      ) {
-        body[field] = options[field];
-      }
-    }
-
-    if (options.partial_custom_fields) {
-      try {
-        body.partial_custom_fields = JSON.parse(
-          options.partial_custom_fields as string,
-        );
-      } catch {
-        body.partial_custom_fields = options.partial_custom_fields;
-      }
-    }
-
-    if (options.relationships_attributes) {
-      try {
-        body.relationships_attributes = JSON.parse(
-          options.relationships_attributes as string,
-        );
-      } catch {
-        body.relationships_attributes =
-          options.relationships_attributes;
-      }
-    }
-  }
-
-  return body;
-}
-
 export async function propertiesCreate(
   this: IExecuteFunctions,
 ): Promise<INodeExecutionData[]> {
-  const body = buildPropertiesCreateBody.call(this);
+  const options = this.getNodeParameter("additionalFields", 0) as IDataObject;
+  const body = buildQs(options, PROPERTY_BODY_MAPPING);
+
+  body.object_type = this.getNodeParameter("object_type", 0) as string;
+  body.rs_type = this.getNodeParameter("rs_type", 0) as string;
+  body.marketing_type = this.getNodeParameter("marketing_type", 0) as string;
 
   const response = await propstackRequest.call(this, {
     method: "POST",
@@ -382,5 +356,3 @@ export async function propertiesCreate(
     Array.isArray(response) ? response : [response],
   );
 }
-
-export default propertiesCreateDescription;
