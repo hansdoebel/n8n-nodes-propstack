@@ -298,6 +298,54 @@ export async function searchTeams(
   return { results };
 }
 
+export async function searchBrokers(
+  this: ILoadOptionsFunctions,
+  filter?: string,
+): Promise<INodeListSearchResult> {
+  const response = await propstackRequest.call(this, {
+    method: "GET",
+    url: API_ENDPOINTS.BROKERS_GET_ALL,
+  });
+  const items = Array.isArray(response) ? response : [response];
+  let results = items
+    .filter((item: IDataObject) => item && item.id)
+    .map((item: IDataObject) => ({
+      name: [item.name, item.email].filter(Boolean).join(" - ") || `Broker #${item.id}`,
+      value: String(item.id),
+    }));
+  if (filter) {
+    const lowerFilter = filter.toLowerCase();
+    results = results.filter((r) =>
+      r.name.toLowerCase().includes(lowerFilter),
+    );
+  }
+  return { results };
+}
+
+export async function searchSnippets(
+  this: ILoadOptionsFunctions,
+  filter?: string,
+): Promise<INodeListSearchResult> {
+  const response = await propstackRequest.call(this, {
+    method: "GET",
+    url: API_ENDPOINTS.SNIPPETS_GET_ALL,
+  });
+  const items = Array.isArray(response) ? response : [response];
+  let results = items
+    .filter((item: IDataObject) => item && item.id)
+    .map((item: IDataObject) => ({
+      name: String(item.name || `Snippet #${item.id}`),
+      value: String(item.id),
+    }));
+  if (filter) {
+    const lowerFilter = filter.toLowerCase();
+    results = results.filter((r) =>
+      r.name.toLowerCase().includes(lowerFilter),
+    );
+  }
+  return { results };
+}
+
 export async function searchWebhooks(
   this: ILoadOptionsFunctions,
   filter?: string,

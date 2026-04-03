@@ -1,5 +1,6 @@
 import {
   searchActivities,
+  searchBrokers,
   searchContacts,
   searchDeals,
   searchDealPipelines,
@@ -8,6 +9,7 @@ import {
   searchProjects,
   searchProperties,
   searchSearchProfiles,
+  searchSnippets,
   searchTasks,
   searchTeams,
   searchWebhooks,
@@ -85,6 +87,34 @@ describe("listSearch", () => {
       expect(opts.method).toBe("GET");
       expect(opts.url).toBe("/v1/activities");
       expect(opts.qs).toEqual({ per: 100 });
+    });
+  });
+
+  describe("searchBrokers", () => {
+    it("returns name with email", async () => {
+      const mock = createMockLoadOptionsFunctions({
+        httpResponse: [{ id: 372213, name: "Hans Dobel", email: "hans@example.com" }],
+      });
+
+      const result = await searchBrokers.call(mock);
+
+      expect(result.results).toEqual([
+        { name: "Hans Dobel - hans@example.com", value: "372213" },
+      ]);
+    });
+
+    it("filters by name", async () => {
+      const mock = createMockLoadOptionsFunctions({
+        httpResponse: [
+          { id: 1, name: "Hans", email: "hans@x.com" },
+          { id: 2, name: "Admin", email: "admin@x.com" },
+        ],
+      });
+
+      const result = await searchBrokers.call(mock, "hans");
+
+      expect(result.results).toHaveLength(1);
+      expect(result.results[0].value).toBe("1");
     });
   });
 
@@ -400,6 +430,30 @@ describe("listSearch", () => {
       const result = await searchSearchProfiles.call(mock);
 
       expect(result.results).toEqual([{ name: "Search Profile #6", value: "6" }]);
+    });
+  });
+
+  describe("searchSnippets", () => {
+    it("returns snippet names", async () => {
+      const mock = createMockLoadOptionsFunctions({
+        httpResponse: [{ id: 924852, name: "Leere E-Mail" }],
+      });
+
+      const result = await searchSnippets.call(mock);
+
+      expect(result.results).toEqual([
+        { name: "Leere E-Mail", value: "924852" },
+      ]);
+    });
+
+    it("uses fallback for missing name", async () => {
+      const mock = createMockLoadOptionsFunctions({
+        httpResponse: [{ id: 5 }],
+      });
+
+      const result = await searchSnippets.call(mock);
+
+      expect(result.results).toEqual([{ name: "Snippet #5", value: "5" }]);
     });
   });
 

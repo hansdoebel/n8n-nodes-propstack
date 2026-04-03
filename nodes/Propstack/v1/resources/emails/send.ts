@@ -6,7 +6,7 @@ import type {
 } from "n8n-workflow";
 
 import { API_ENDPOINTS } from "../../constants";
-import { buildQs, propstackRequest, splitCsv, splitCsvInt, toInt } from "../../helpers";
+import { buildQs, extractResourceLocatorValue, propstackRequest, splitCsv, splitCsvInt, toInt } from "../../helpers";
 
 const showForEmailsSend = {
   operation: ["send"],
@@ -15,15 +15,33 @@ const showForEmailsSend = {
 
 export const emailsSendDescription: INodeProperties[] = [
   {
-    displayName: "Broker ID",
+    displayName: "Broker",
     name: "broker_id",
-    type: "string",
+    type: "resourceLocator",
     required: true,
-    default: "",
+    default: { mode: "list", value: "" },
     displayOptions: {
       show: showForEmailsSend,
     },
-    description: "Sender's user ID",
+    description: "Sender user account",
+    modes: [
+      {
+        displayName: "From List",
+        name: "list",
+        type: "list",
+        typeOptions: {
+          searchListMethod: "searchBrokers",
+          searchable: true,
+          searchFilterRequired: false,
+        },
+      },
+      {
+        displayName: "By ID",
+        name: "id",
+        type: "string",
+        placeholder: "e.g. 372213",
+      },
+    ],
   },
   {
     displayName: "To",
@@ -37,15 +55,33 @@ export const emailsSendDescription: INodeProperties[] = [
     description: "Recipient email addresses (comma-separated)",
   },
   {
-    displayName: "Snippet ID",
+    displayName: "Snippet",
     name: "snippet_id",
-    type: "string",
+    type: "resourceLocator",
     required: true,
-    default: "",
+    default: { mode: "list", value: "" },
     displayOptions: {
       show: showForEmailsSend,
     },
-    description: "Template ID to send",
+    description: "Email template to send",
+    modes: [
+      {
+        displayName: "From List",
+        name: "list",
+        type: "list",
+        typeOptions: {
+          searchListMethod: "searchSnippets",
+          searchable: true,
+          searchFilterRequired: false,
+        },
+      },
+      {
+        displayName: "By ID",
+        name: "id",
+        type: "string",
+        placeholder: "e.g. 924852",
+      },
+    ],
   },
   {
     displayName: "Additional Fields",
@@ -113,11 +149,17 @@ export const emailsSendDescription: INodeProperties[] = [
 export async function emailsSend(
   this: IExecuteFunctions,
 ): Promise<INodeExecutionData[]> {
+  const brokerId = extractResourceLocatorValue(
+    this.getNodeParameter("broker_id", 0),
+  );
+  const snippetId = extractResourceLocatorValue(
+    this.getNodeParameter("snippet_id", 0),
+  );
   const to = this.getNodeParameter("to", 0) as string;
   const options = this.getNodeParameter("additionalFields", 0) as IDataObject;
   const body: IDataObject = {
-    broker_id: this.getNodeParameter("broker_id", 0) as string,
-    snippet_id: this.getNodeParameter("snippet_id", 0) as string,
+    broker_id: parseInt(brokerId, 10),
+    snippet_id: parseInt(snippetId, 10),
     to: to.split(",").map((email) => email.trim()),
     ...buildQs(options, {
       cc: splitCsv("cc"),
@@ -140,5 +182,3 @@ export async function emailsSend(
     Array.isArray(response) ? response : [response],
   );
 }
-
-export default emailsSendDescription;

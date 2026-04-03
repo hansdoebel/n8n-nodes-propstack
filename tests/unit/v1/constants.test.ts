@@ -44,6 +44,12 @@ describe("API_ENDPOINTS", () => {
     });
   });
 
+  describe("snippets", () => {
+    it("has correct static endpoints", () => {
+      expect(API_ENDPOINTS.SNIPPETS_GET_ALL).toBe("/v1/snippets");
+    });
+  });
+
   describe("emails", () => {
     it("has correct static endpoints", () => {
       expect(API_ENDPOINTS.EMAILS_SEND).toBe("/v1/messages");

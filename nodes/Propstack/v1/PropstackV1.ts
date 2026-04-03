@@ -11,11 +11,13 @@ import {
 import { API_ENDPOINTS } from "./constants";
 import {
   searchActivities,
+  searchBrokers,
   searchContacts,
   searchDeals,
   searchDealPipelines,
   searchDocuments,
   searchParentFeatures,
+  searchSnippets,
   searchProjects,
   searchProperties,
   searchSearchProfiles,
@@ -144,6 +146,11 @@ import {
   webhooksGetAll,
   webhooksOperations,
 } from "./resources/webhooks";
+import {
+  snippetsFields,
+  snippetsGetAll,
+  snippetsOperations,
+} from "./resources/snippets";
 
 export class PropstackV1 implements INodeType {
   description: INodeTypeDescription;
@@ -242,6 +249,10 @@ export class PropstackV1 implements INodeType {
               value: "searchProfiles",
             },
             {
+              name: "Snippet",
+              value: "snippets",
+            },
+            {
               name: "Task",
               value: "tasks",
             },
@@ -282,6 +293,8 @@ export class PropstackV1 implements INodeType {
         ...propertiesDescription,
         ...searchProfilesOperations,
         ...searchProfilesFields,
+        ...snippetsOperations,
+        ...snippetsFields,
         ...tasksOperations,
         ...tasksFields,
         ...teamsOperations,
@@ -295,6 +308,7 @@ export class PropstackV1 implements INodeType {
   methods = {
     listSearch: {
       searchActivities,
+      searchBrokers,
       searchContacts,
       searchDeals,
       searchDealPipelines,
@@ -303,6 +317,7 @@ export class PropstackV1 implements INodeType {
       searchProjects,
       searchProperties,
       searchSearchProfiles,
+      searchSnippets,
       searchTasks,
       searchTeams,
       searchWebhooks,
@@ -399,6 +414,9 @@ export class PropstackV1 implements INodeType {
         delete: searchProfilesDelete,
         getAll: searchProfilesGetAll,
         update: searchProfilesUpdate,
+      },
+      snippets: {
+        getAll: snippetsGetAll,
       },
       tasks: {
         create: tasksCreate,

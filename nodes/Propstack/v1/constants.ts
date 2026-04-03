@@ -46,6 +46,7 @@ export const API_ENDPOINTS = {
   FEATURES_CREATE: "/v1/groups",
   FEATURES_GET_ALL: "/v1/groups",
   FEATURES_PARENT_GET_ALL: "/v1/super_groups",
+  SNIPPETS_GET_ALL: "/v1/snippets",
   BROKERS_GET_ALL: "/v1/brokers",
   PORTAL_EXPORT: "/v1/portals/publish",
   SEARCH_PROFILES_CREATE: "/v1/saved_queries",
