@@ -196,10 +196,10 @@ describe("listSearch", () => {
   describe("searchDealPipelines", () => {
     it("returns pipeline names", async () => {
       const mock = createMockLoadOptionsFunctions({
-        httpResponse: [
+        httpResponse: { data: [
           { id: 1, name: "Sales Pipeline" },
           { id: 2, name: "Rental Pipeline" },
-        ],
+        ] },
       });
 
       const result = await searchDealPipelines.call(mock);
@@ -212,7 +212,7 @@ describe("listSearch", () => {
 
     it("uses fallback name", async () => {
       const mock = createMockLoadOptionsFunctions({
-        httpResponse: [{ id: 3 }],
+        httpResponse: { data: [{ id: 3 }] },
       });
 
       const result = await searchDealPipelines.call(mock);
@@ -222,10 +222,10 @@ describe("listSearch", () => {
 
     it("filters pipelines", async () => {
       const mock = createMockLoadOptionsFunctions({
-        httpResponse: [
+        httpResponse: { data: [
           { id: 1, name: "Sales" },
           { id: 2, name: "Rental" },
-        ],
+        ] },
       });
 
       const result = await searchDealPipelines.call(mock, "rental");
