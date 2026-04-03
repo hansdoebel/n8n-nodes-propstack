@@ -6,7 +6,11 @@ import type {
 } from "n8n-workflow";
 
 import { API_ENDPOINTS } from "../../constants";
-import { propstackRequest, simplifyResponse } from "../../helpers";
+import { buildQs, propstackRequest, simplifyResponse, splitCsv } from "../../helpers";
+
+const joinArray =
+  (key: string) =>
+  (v: unknown): [string, unknown] => [key, (v as string[]).join(",")];
 
 const DEALS_SIMPLIFIED_FIELDS = [
   "id", "client_id", "property_id", "deal_stage_id",
@@ -215,12 +219,32 @@ export async function dealsGetAll(
 ): Promise<INodeExecutionData[]> {
   const returnAll = this.getNodeParameter("returnAll", 0) as boolean;
   const limit = this.getNodeParameter("limit", 0, 50) as number;
-  const options = this.getNodeParameter(
-    "additionalFields",
-    0,
-  ) as IDataObject;
+  const options = this.getNodeParameter("additionalFields", 0) as IDataObject;
 
   const page = (options?.page as number) || 1;
+
+  const skipZero = (key: string) => (v: unknown): [string, unknown] | undefined =>
+    v === 0 ? undefined : [key, v];
+
+  const optionsQs = buildQs(options, {
+    include: joinArray("include"),
+    sort_by: "sort_by",
+    order: "order",
+    category: "category",
+    deal_stage_ids: splitCsv("deal_stage_ids"),
+    deal_pipeline_id: "deal_pipeline_id",
+    broker_id: "broker_id",
+    client_id: "client_id",
+    property_id: "property_id",
+    feeling_from: skipZero("feeling_from"),
+    feeling_to: skipZero("feeling_to"),
+    created_at_from: "created_at_from",
+    created_at_to: "created_at_to",
+    start_date_from: "start_date_from",
+    start_date_to: "start_date_to",
+    show_archived_clients: "show_archived_clients",
+    hide_archived_properties: "hide_archived_properties",
+  });
 
   if (returnAll) {
     let allResults: IDataObject[] = [];
@@ -228,82 +252,14 @@ export async function dealsGetAll(
     let hasMore = true;
 
     while (hasMore) {
-      const qs: IDataObject = {
-        page: currentPage,
-        per: 100,
-      };
-
-      if (options) {
-        if (options.include) {
-          qs.include = (options.include as string[]).join(",");
-        }
-        if (options.sort_by) qs.sort_by = options.sort_by;
-        if (options.order) qs.order = options.order;
-        if (
-          options.category !== undefined &&
-          options.category !== ""
-        ) {
-          qs.category = options.category;
-        }
-        if (options.deal_stage_ids) {
-          qs.deal_stage_ids = (options.deal_stage_ids as string)
-            .split(",")
-            .map((id) => id.trim());
-        }
-        if (options.deal_pipeline_id) {
-          qs.deal_pipeline_id = options.deal_pipeline_id;
-        }
-        if (options.broker_id) {
-          qs.broker_id = options.broker_id;
-        }
-        if (options.client_id) {
-          qs.client_id = options.client_id;
-        }
-        if (options.property_id) {
-          qs.property_id = options.property_id;
-        }
-        if (
-          options.feeling_from !== undefined &&
-          options.feeling_from !== 0 &&
-          options.feeling_from !== ""
-        ) {
-          qs.feeling_from = options.feeling_from;
-        }
-        if (
-          options.feeling_to !== undefined &&
-          options.feeling_to !== 0 &&
-          options.feeling_to !== ""
-        ) {
-          qs.feeling_to = options.feeling_to;
-        }
-        if (options.created_at_from) {
-          qs.created_at_from = options.created_at_from;
-        }
-        if (options.created_at_to) {
-          qs.created_at_to = options.created_at_to;
-        }
-        if (options.start_date_from) {
-          qs.start_date_from = options.start_date_from;
-        }
-        if (options.start_date_to) {
-          qs.start_date_to = options.start_date_to;
-        }
-        if (options.show_archived_clients) {
-          qs.show_archived_clients = options.show_archived_clients;
-        }
-        if (options.hide_archived_properties) {
-          qs.hide_archived_properties =
-            options.hide_archived_properties;
-        }
-      }
-
       const response = await propstackRequest.call(this, {
         method: "GET",
         url: API_ENDPOINTS.DEALS_GET_ALL,
-        qs,
+        qs: { page: currentPage, per: 100, ...optionsQs },
       });
 
-      const results = Array.isArray(response) ? response : [response];
+      const body = response as IDataObject;
+      const results = Array.isArray(body.data) ? body.data : [];
       allResults = allResults.concat(results);
 
       if (results.length < 100) {
@@ -319,77 +275,14 @@ export async function dealsGetAll(
     );
   }
 
-  const qs: IDataObject = {
-    page,
-    per: limit,
-  };
-
-  if (options) {
-    if (options.include) {
-      qs.include = (options.include as string[]).join(",");
-    }
-    if (options.sort_by) qs.sort_by = options.sort_by;
-    if (options.order) qs.order = options.order;
-    if (
-      options.category !== undefined &&
-      options.category !== ""
-    ) {
-      qs.category = options.category;
-    }
-    if (options.deal_stage_ids) {
-      qs.deal_stage_ids = (options.deal_stage_ids as string)
-        .split(",")
-        .map((id) => id.trim());
-    }
-    if (options.deal_pipeline_id) {
-      qs.deal_pipeline_id = options.deal_pipeline_id;
-    }
-    if (options.broker_id) qs.broker_id = options.broker_id;
-    if (options.client_id) qs.client_id = options.client_id;
-    if (options.property_id) {
-      qs.property_id = options.property_id;
-    }
-    if (
-      options.feeling_from !== undefined &&
-      options.feeling_from !== 0 &&
-      options.feeling_from !== ""
-    ) {
-      qs.feeling_from = options.feeling_from;
-    }
-    if (
-      options.feeling_to !== undefined &&
-      options.feeling_to !== 0 &&
-      options.feeling_to !== ""
-    ) {
-      qs.feeling_to = options.feeling_to;
-    }
-    if (options.created_at_from) {
-      qs.created_at_from = options.created_at_from;
-    }
-    if (options.created_at_to) {
-      qs.created_at_to = options.created_at_to;
-    }
-    if (options.start_date_from) {
-      qs.start_date_from = options.start_date_from;
-    }
-    if (options.start_date_to) {
-      qs.start_date_to = options.start_date_to;
-    }
-    if (options.show_archived_clients) {
-      qs.show_archived_clients = options.show_archived_clients;
-    }
-    if (options.hide_archived_properties) {
-      qs.hide_archived_properties = options.hide_archived_properties;
-    }
-  }
-
   const response = await propstackRequest.call(this, {
     method: "GET",
     url: API_ENDPOINTS.DEALS_GET_ALL,
-    qs,
+    qs: { page, per: limit, ...optionsQs },
   });
 
-  const data = Array.isArray(response) ? response : [response];
+  const body = response as IDataObject;
+  const data = Array.isArray(body.data) ? body.data : [];
   const simplify = this.getNodeParameter("simplify", 0, true) as boolean;
   return this.helpers.returnJsonArray(
     simplify ? simplifyResponse(data, DEALS_SIMPLIFIED_FIELDS) : data,

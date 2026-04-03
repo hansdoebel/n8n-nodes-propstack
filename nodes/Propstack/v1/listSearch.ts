@@ -58,12 +58,12 @@ export async function searchDeals(
   this: ILoadOptionsFunctions,
   filter?: string,
 ): Promise<INodeListSearchResult> {
-  const response = await propstackRequest.call(this, {
+  const response = (await propstackRequest.call(this, {
     method: "GET",
     url: API_ENDPOINTS.DEALS_GET_ALL,
     qs: { per: 100, include: "client,property" },
-  });
-  const items = Array.isArray(response) ? response : [response];
+  })) as { data?: IDataObject[] };
+  const items = Array.isArray(response.data) ? response.data : [];
   let results = items
     .filter((item: IDataObject) => item && item.id)
     .map((item: IDataObject) => {

@@ -6,7 +6,18 @@ import type {
 } from "n8n-workflow";
 
 import { API_ENDPOINTS } from "../../constants";
-import { extractResourceLocatorValue, propstackRequest } from "../../helpers";
+import { buildQs, extractResourceLocatorValue, propstackRequest } from "../../helpers";
+
+const DEAL_BODY_MAPPING: Record<string, string> = {
+  broker_id: "broker_id",
+  project_id: "project_id",
+  deal_pipeline_id: "deal_pipeline_id",
+  date: "date",
+  price: "price",
+  note: "note",
+  feeling: "feeling",
+  category: "category",
+};
 
 const showForDealsCreate = {
   operation: ["create"],
@@ -167,50 +178,16 @@ export const dealsCreateDescription: INodeProperties[] = [
   },
 ];
 
-function buildDealsCreateBody(this: IExecuteFunctions): IDataObject {
-  const body: IDataObject = {};
-
-  body.client_id = extractResourceLocatorValue(
-    this.getNodeParameter("client_id", 0),
-  );
-  body.property_id = extractResourceLocatorValue(
-    this.getNodeParameter("property_id", 0),
-  );
-  body.deal_stage_id = this.getNodeParameter("deal_stage_id", 0) as string;
-
-  const options = this.getNodeParameter(
-    "additionalFields",
-    0,
-  ) as IDataObject;
-
-  if (options) {
-    const fields = [
-      "broker_id",
-      "project_id",
-      "deal_pipeline_id",
-      "date",
-      "price",
-      "note",
-      "feeling",
-      "category",
-    ];
-
-    for (const field of fields) {
-      if (
-        options[field] !== undefined && options[field] !== ""
-      ) {
-        body[field] = options[field];
-      }
-    }
-  }
-
-  return body;
-}
-
 export async function dealsCreate(
   this: IExecuteFunctions,
 ): Promise<INodeExecutionData[]> {
-  const body = buildDealsCreateBody.call(this);
+  const options = this.getNodeParameter("additionalFields", 0) as IDataObject;
+  const body: IDataObject = {
+    client_id: extractResourceLocatorValue(this.getNodeParameter("client_id", 0)),
+    property_id: extractResourceLocatorValue(this.getNodeParameter("property_id", 0)),
+    deal_stage_id: this.getNodeParameter("deal_stage_id", 0) as string,
+    ...buildQs(options, DEAL_BODY_MAPPING),
+  };
 
   const response = await propstackRequest.call(this, {
     method: "POST",

@@ -143,13 +143,13 @@ describe("listSearch", () => {
   describe("searchDeals", () => {
     it("formats deal with client and property info", async () => {
       const mock = createMockLoadOptionsFunctions({
-        httpResponse: [
+        httpResponse: { data: [
           {
             id: 1,
             client: { first_name: "John", last_name: "Doe" },
             property: { title: "Nice Apartment" },
           },
-        ],
+        ] },
       });
 
       const result = await searchDeals.call(mock);
@@ -161,7 +161,7 @@ describe("listSearch", () => {
 
     it("formats deal without client/property", async () => {
       const mock = createMockLoadOptionsFunctions({
-        httpResponse: [{ id: 42 }],
+        httpResponse: { data: [{ id: 42 }] },
       });
 
       const result = await searchDeals.call(mock);
@@ -171,10 +171,10 @@ describe("listSearch", () => {
 
     it("filters deals by name", async () => {
       const mock = createMockLoadOptionsFunctions({
-        httpResponse: [
+        httpResponse: { data: [
           { id: 1, client: { first_name: "John" } },
           { id: 2, client: { first_name: "Jane" } },
-        ],
+        ] },
       });
 
       const result = await searchDeals.call(mock, "jane");
@@ -184,7 +184,7 @@ describe("listSearch", () => {
     });
 
     it("requests with include=client,property", async () => {
-      const mock = createMockLoadOptionsFunctions({ httpResponse: [] });
+      const mock = createMockLoadOptionsFunctions({ httpResponse: { data: [] } });
 
       await searchDeals.call(mock);
 

@@ -6,7 +6,21 @@ import type {
 } from "n8n-workflow";
 
 import { API_ENDPOINTS } from "../../constants";
-import { extractResourceLocatorValue, propstackRequest } from "../../helpers";
+import { buildQs, extractResourceLocatorValue, propstackRequest } from "../../helpers";
+
+const DEAL_BODY_MAPPING: Record<string, string> = {
+  client_id: "client_id",
+  property_id: "property_id",
+  deal_stage_id: "deal_stage_id",
+  broker_id: "broker_id",
+  project_id: "project_id",
+  deal_pipeline_id: "deal_pipeline_id",
+  date: "date",
+  price: "price",
+  note: "note",
+  feeling: "feeling",
+  category: "category",
+};
 
 const showForDealsUpdate = {
   operation: ["update"],
@@ -117,48 +131,14 @@ export const dealsUpdateDescription: INodeProperties[] = [
   },
 ];
 
-function buildDealsUpdateBody(this: IExecuteFunctions): IDataObject {
-  const body: IDataObject = {};
-
-  const options = this.getNodeParameter(
-    "additionalFields",
-    0,
-  ) as IDataObject;
-
-  if (options) {
-    const fields = [
-      "client_id",
-      "property_id",
-      "deal_stage_id",
-      "broker_id",
-      "project_id",
-      "deal_pipeline_id",
-      "date",
-      "price",
-      "note",
-      "feeling",
-      "category",
-    ];
-
-    for (const field of fields) {
-      if (
-        options[field] !== undefined && options[field] !== ""
-      ) {
-        body[field] = options[field];
-      }
-    }
-  }
-
-  return body;
-}
-
 export async function dealsUpdate(
   this: IExecuteFunctions,
 ): Promise<INodeExecutionData[]> {
   const dealId = extractResourceLocatorValue(
     this.getNodeParameter("dealId", 0),
   );
-  const body = buildDealsUpdateBody.call(this);
+  const options = this.getNodeParameter("additionalFields", 0) as IDataObject;
+  const body = buildQs(options, DEAL_BODY_MAPPING);
 
   const response = await propstackRequest.call(this, {
     method: "PUT",

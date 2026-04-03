@@ -61,7 +61,7 @@ describe("deals", () => {
           limit: 50,
           additionalFields: {},
         },
-        httpResponse: [{ id: 1 }, { id: 2 }],
+        httpResponse: { data: [{ id: 1 }, { id: 2 }] },
       });
 
       const result = await dealsGetAll.call(mock);

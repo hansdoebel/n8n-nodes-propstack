@@ -6,7 +6,7 @@ import type {
 } from "n8n-workflow";
 
 import { API_ENDPOINTS } from "../../constants";
-import { extractResourceLocatorValue, propstackRequest, simplifyResponse } from "../../helpers";
+import { buildQs, extractResourceLocatorValue, propstackRequest, simplifyResponse } from "../../helpers";
 
 const DEALS_SIMPLIFIED_FIELDS = [
   "id", "client_id", "property_id", "deal_stage_id",
@@ -50,18 +50,11 @@ export async function dealsGet(
   const dealId = extractResourceLocatorValue(
     this.getNodeParameter("dealId", 0),
   );
-  const options = this.getNodeParameter(
-    "additionalFields",
-    0,
-  ) as IDataObject;
+  const options = this.getNodeParameter("additionalFields", 0) as IDataObject;
 
-  const qs: IDataObject = {};
-
-  if (options) {
-    if (options.include) {
-      qs.include = (options.include as string[]).join(",");
-    }
-  }
+  const qs = buildQs(options, {
+    include: (v) => ["include", (v as string[]).join(",")],
+  });
 
   const response = await propstackRequest.call(this, {
     method: "GET",
