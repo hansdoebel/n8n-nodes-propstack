@@ -6,7 +6,7 @@ import type {
 } from "n8n-workflow";
 
 import { API_ENDPOINTS } from "../../constants";
-import { propstackRequest } from "../../helpers";
+import { buildQs, propstackRequest, toInt } from "../../helpers";
 
 const showForEventsGetAll = {
   operation: ["getAll"],
@@ -120,49 +120,22 @@ export const eventsGetAllDescription: INodeProperties[] = [
 export async function eventsGetAll(
   this: IExecuteFunctions,
 ): Promise<INodeExecutionData[]> {
-  const options = this.getNodeParameter(
-    "additionalFields",
-    0,
-  ) as IDataObject;
+  const options = this.getNodeParameter("additionalFields", 0) as IDataObject;
 
-  const qs: IDataObject = {};
-
-  if (options) {
-    if (options.broker) {
-      qs.broker = parseInt(options.broker as string, 10);
-    }
-    if (options.client) {
-      qs.client = parseInt(options.client as string, 10);
-    }
-    if (options.endsAtAfter) {
-      qs.ends_at_after = options.endsAtAfter;
-    }
-    if (options.endsAtBefore) {
-      qs.ends_at_before = options.endsAtBefore;
-    }
-    if (options.noteType) {
-      qs.note_type = parseInt(options.noteType as string, 10);
-    }
-    if (options.property) {
-      qs.property = parseInt(options.property as string, 10);
-    }
-    if (options.project) {
-      qs.project = parseInt(options.project as string, 10);
-    }
-    if (options.recurring !== undefined) {
-      qs.recurring = options.recurring;
-    }
-    if (options.startsAtAfter) {
-      qs.starts_at_after = options.startsAtAfter;
-    }
-    if (options.startsAtBefore) {
-      qs.starts_at_before = options.startsAtBefore;
-    }
-    if (options.state) qs.state = options.state;
-    if (options.tag) {
-      qs.tag = parseInt(options.tag as string, 10);
-    }
-  }
+  const qs = buildQs(options, {
+    broker: toInt("broker"),
+    client: toInt("client"),
+    endsAtAfter: (v) => ["ends_at_after", v],
+    endsAtBefore: (v) => ["ends_at_before", v],
+    noteType: toInt("note_type"),
+    property: toInt("property"),
+    project: toInt("project"),
+    recurring: "recurring",
+    startsAtAfter: (v) => ["starts_at_after", v],
+    startsAtBefore: (v) => ["starts_at_before", v],
+    state: "state",
+    tag: toInt("tag"),
+  });
 
   const response = await propstackRequest.call(this, {
     method: "GET",
@@ -170,9 +143,9 @@ export async function eventsGetAll(
     qs,
   });
 
-  return this.helpers.returnJsonArray(
-    Array.isArray(response) ? response : [response],
-  );
+  const body = response as IDataObject;
+  const results = Array.isArray(body.events) ? body.events : [];
+  return this.helpers.returnJsonArray(results);
 }
 
 export default eventsGetAllDescription;

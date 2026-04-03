@@ -124,7 +124,7 @@ describe("events", () => {
           limit: 20,
           additionalFields: {},
         },
-        httpResponse: [{ id: 1 }],
+        httpResponse: { events: [{ id: 1 }] },
       });
 
       const result = await eventsGetAll.call(mock);
