@@ -43,18 +43,10 @@ export async function propstackV2Request(
   this: IExecuteFunctions | ILoadOptionsFunctions,
   options: Partial<IHttpRequestOptions> = {},
 ) {
-  const credentials = await this.getCredentials("propstackV2Api");
-  const apiToken = credentials?.apiToken as string;
-
-  if (!apiToken) {
-    throw new Error("propstackApi apiToken is required");
-  }
-
   const headers = {
     Accept: "application/json",
     "Content-Type": "application/json",
     ...(options.headers ?? {}),
-    "X-Api-Key": apiToken,
   };
 
   const opts: IHttpRequestOptions = {
@@ -64,7 +56,7 @@ export async function propstackV2Request(
   } as IHttpRequestOptions;
 
   try {
-    return await this.helpers.httpRequest!(opts);
+    return await this.helpers.httpRequestWithAuthentication.call(this, "propstackV2Api", opts);
   } catch (error) {
     const err = error as { message?: string; httpStatusCode?: number };
     throw new NodeApiError(this.getNode(), error as JsonObject, {

@@ -60,14 +60,12 @@ describe("buildQs", () => {
 });
 
 describe("propstackV2Request", () => {
-  it("sends correct headers with API key", async () => {
+  it("sends standard JSON headers", async () => {
     const ctx = createMockLoadOptionsFunctions({
-      credentials: { apiToken: "my-key" },
       httpResponse: { ok: true },
     });
     await propstackV2Request.call(ctx, { method: "GET", url: "/v2/test" });
     const opts = getHttpRequestOptions(ctx);
-    expect(opts.headers["X-Api-Key"]).toBe("my-key");
     expect(opts.headers["Accept"]).toBe("application/json");
     expect(opts.headers["Content-Type"]).toBe("application/json");
   });
@@ -79,13 +77,15 @@ describe("propstackV2Request", () => {
     expect(opts.baseURL).toBe("https://api.propstack.de");
   });
 
-  it("throws on missing API token", async () => {
+  it("delegates auth to httpRequestWithAuthentication with propstackV2Api", async () => {
     const ctx = createMockLoadOptionsFunctions({
-      credentials: { apiToken: "" },
+      httpResponse: { ok: true },
     });
-    expect(
-      propstackV2Request.call(ctx, { method: "GET", url: "/v2/test" }),
-    ).rejects.toThrow("propstackApi apiToken is required");
+    await propstackV2Request.call(ctx, { method: "GET", url: "/v2/test" });
+    const authMock = ctx.helpers.httpRequestWithAuthentication as unknown as {
+      mock: { calls: unknown[][] };
+    };
+    expect(authMock.mock.calls[0]?.[0]).toBe("propstackV2Api");
   });
 });
 

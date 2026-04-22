@@ -17,13 +17,17 @@ export function createMockExecuteFunctions(opts: {
     httpResponse = {},
   } = opts;
 
-  const helpers = {
+  const helpers: Record<string, unknown> = {
     httpRequest: mock().mockResolvedValue(httpResponse),
     returnJsonArray: mock((data: IDataObject | IDataObject[]) => {
       const items = Array.isArray(data) ? data : [data];
       return items.map((json) => ({ json, pairedItem: { item: 0 } }));
     }),
   };
+  helpers.httpRequestWithAuthentication = mock(
+    async (_credentialType: string, requestOptions: unknown) =>
+      (helpers.httpRequest as ReturnType<typeof mock>)(requestOptions),
+  );
 
   const ctx = {
     getNodeParameter: mock((name: string, _index: number, fallback?: unknown) => {
@@ -47,9 +51,13 @@ export function createMockLoadOptionsFunctions(opts: {
     httpResponse = [],
   } = opts;
 
-  const helpers = {
+  const helpers: Record<string, unknown> = {
     httpRequest: mock().mockResolvedValue(httpResponse),
   };
+  helpers.httpRequestWithAuthentication = mock(
+    async (_credentialType: string, requestOptions: unknown) =>
+      (helpers.httpRequest as ReturnType<typeof mock>)(requestOptions),
+  );
 
   const ctx = {
     getCredentials: mock().mockResolvedValue(credentials),

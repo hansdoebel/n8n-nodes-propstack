@@ -123,7 +123,6 @@ describe("propstackRequest", () => {
 
     const opts = getHttpRequestOptions(mock);
     expect(opts.baseURL).toBe("https://api.propstack.de");
-    expect(opts.headers["X-API-KEY"]).toBe("test-api-token");
     expect(opts.headers.Accept).toBe("application/json");
     expect(opts.headers["Content-Type"]).toBe("application/json");
     expect(opts.method).toBe("GET");
@@ -143,25 +142,22 @@ describe("propstackRequest", () => {
 
     const opts = getHttpRequestOptions(mock);
     expect(opts.headers["X-Custom"]).toBe("value");
-    expect(opts.headers["X-API-KEY"]).toBe("test-api-token");
   });
 
-  it("throws error when API token is missing", async () => {
+  it("delegates auth to httpRequestWithAuthentication", async () => {
     const mock = createMockExecuteFunctions({
-      credentials: { apiToken: "" },
+      httpResponse: {},
     });
 
-    await expect(propstackRequest.call(mock, { method: "GET", url: "/v1/contacts" }))
-      .rejects.toThrow("propstackApi apiToken is required");
-  });
-
-  it("throws error when credentials have no apiToken", async () => {
-    const mock = createMockExecuteFunctions({
-      credentials: {},
+    await propstackRequest.call(mock, {
+      method: "GET",
+      url: "/v1/contacts",
     });
 
-    await expect(propstackRequest.call(mock, {}))
-      .rejects.toThrow("propstackApi apiToken is required");
+    const authMock = mock.helpers.httpRequestWithAuthentication as unknown as {
+      mock: { calls: unknown[][] };
+    };
+    expect(authMock.mock.calls[0]?.[0]).toBe("propstackApi");
   });
 
   it("passes body for POST requests", async () => {
@@ -216,6 +212,5 @@ describe("propstackRequest", () => {
 
     const opts = getHttpRequestOptions(mock);
     expect(opts.baseURL).toBe("https://api.propstack.de");
-    expect(opts.headers["X-API-KEY"]).toBe("test-api-token");
   });
 });
